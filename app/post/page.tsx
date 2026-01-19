@@ -61,7 +61,7 @@ export default function PostItemPage() {
 
     try {
       const { data } = await api.post('/upload', uploadData);
-      setFormData(prev => ({ ...prev, images: [...prev.images, data.imageUrl] }));
+      setFormData(prev => ({ ...prev, images: [...prev.images, data.url] }));
       toast.success('Image uploaded');
     } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
       toast.error('Image upload failed');

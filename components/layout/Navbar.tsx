@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import api from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
 import { Search, User, LogOut } from 'lucide-react';
@@ -26,12 +27,32 @@ export default function Navbar() {
     { href: '/', label: 'Browse' },
     ...(user ? [
       { href: '/dashboard', label: 'Dashboard' },
-      { href: '/chat', label: 'Messages' },
+      { href: '/chat', label: 'Messages', hasBadge: true },
     ] : []),
     ...(user && user.role === 'admin' ? [
         { href: '/admin', label: 'Admin', className: 'text-red-600 dark:text-red-400' }
     ] : [])
   ];
+
+  const [hasUnread, setHasUnread] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      const checkUnread = async () => {
+        try {
+          const { data } = await api.get('/chats/unread');
+          setHasUnread(data.hasUnread);
+        } catch (err) {
+            console.error(err);
+        }
+      };
+      
+      checkUnread();
+      // Poll every 10 seconds
+      const interval = setInterval(checkUnread, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
 
   return (
     <nav className="border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-black sticky top-0 z-50">
@@ -66,6 +87,10 @@ export default function Navbar() {
                         } ${link.className || ''}`}
                     >
                         {link.label}
+                        {/* @ts-ignore */}
+                        {link.hasBadge && hasUnread && (
+                            <span className="absolute top-1 right-1 w-2 h-2 bg-red-600 rounded-full border border-white dark:border-black animate-pulse" />
+                        )} 
                     </Link>
                 );
             })}
