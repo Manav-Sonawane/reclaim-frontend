@@ -1,0 +1,80 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { useAuth } from '../../../context/AuthContext';
+import { Button } from '../../../components/ui/Button';
+import { Input } from '../../../components/ui/Input';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../../../components/ui/Card';
+import api from '../../../lib/api';
+import toast from 'react-hot-toast';
+
+export default function RegisterPage() {
+  const { login } = useAuth();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { data } = await api.post('/auth/register', { name, email, password });
+      login(data.token, data);
+      toast.success('Account created successfully!');
+    } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+      toast.error(error.response?.data?.message || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-black p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-center">Create Account</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
+              label="Full Name"
+              type="text"
+              placeholder="John Doe"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+            <Input
+              label="Email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <Input
+              label="Password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+            />
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Creating Account...' : 'Sign Up'}
+            </Button>
+          </form>
+        </CardContent>
+        <CardFooter className="justify-center text-sm text-gray-500">
+          Already have an account?{' '}
+          <Link href="/auth/login" className="ml-1 text-blue-600 hover:underline">
+            Login
+          </Link>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+}
