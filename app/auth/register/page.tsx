@@ -8,6 +8,7 @@ import { Input } from '../../../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../../../components/ui/Card';
 import api from '../../../lib/api';
 import toast from 'react-hot-toast';
+import { GoogleLogin } from '@react-oauth/google';
 
 export default function RegisterPage() {
   const { login } = useAuth();
@@ -25,6 +26,21 @@ export default function RegisterPage() {
       toast.success('Account created successfully!');
     } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       toast.error(error.response?.data?.message || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignup = async (credentialResponse: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+    setLoading(true);
+    try {
+      const { data } = await api.post('/auth/google', { 
+        credential: credentialResponse.credential 
+      });
+      login(data.token, data);
+      toast.success('Signed up with Google successfully!');
+    } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+      toast.error(error.response?.data?.message || 'Google signup failed');
     } finally {
       setLoading(false);
     }
@@ -67,6 +83,24 @@ export default function RegisterPage() {
               {loading ? 'Creating Account...' : 'Sign Up'}
             </Button>
           </form>
+          
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-300" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white dark:bg-gray-900 px-2 text-gray-500">Or continue with</span>
+            </div>
+          </div>
+
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleSignup}
+              onError={() => {
+                toast.error('Google signup failed');
+              }}
+            />
+          </div>
         </CardContent>
         <CardFooter className="justify-center text-sm text-gray-500">
           Already have an account?{' '}

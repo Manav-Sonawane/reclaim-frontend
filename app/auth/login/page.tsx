@@ -8,6 +8,7 @@ import { Input } from '../../../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../../../components/ui/Card';
 import api from '../../../lib/api';
 import toast from 'react-hot-toast';
+import { GoogleLogin } from '@react-oauth/google';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -24,6 +25,21 @@ export default function LoginPage() {
       toast.success('Logged in successfully!');
     } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       toast.error(error.response?.data?.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async (credentialResponse: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+    setLoading(true);
+    try {
+      const { data } = await api.post('/auth/google', { 
+        credential: credentialResponse.credential 
+      });
+      login(data.token, data);
+      toast.success('Logged in with Google successfully!');
+    } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+      toast.error(error.response?.data?.message || 'Google login failed');
     } finally {
       setLoading(false);
     }
@@ -57,6 +73,25 @@ export default function LoginPage() {
               {loading ? 'Logging in...' : 'Sign In'}
             </Button>
           </form>
+          
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-300" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white dark:bg-gray-900 px-2 text-gray-500">Or continue with</span>
+            </div>
+          </div>
+
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleLogin}
+              onError={() => {
+                toast.error('Google login failed');
+              }}
+              useOneTap
+            />
+          </div>
         </CardContent>
         <CardFooter className="justify-center text-sm text-gray-500">
           Don&apos;t have an account?{' '}

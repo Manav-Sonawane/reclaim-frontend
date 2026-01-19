@@ -21,6 +21,7 @@ export const metadata: Metadata = {
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '../context/AuthContext';
 import Navbar from '../components/layout/Navbar';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 export default function RootLayout({
   children,
@@ -33,13 +34,15 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning={true}
       >
-        <AuthProvider>
-          <Navbar />
-          <main className="min-h-[calc(100vh-4rem)]">
-            {children}
-          </main>
-          <Toaster position="top-center" />
-        </AuthProvider>
+        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''}>
+          <AuthProvider>
+            <Navbar />
+            <main className="min-h-[calc(100vh-4rem)]">
+              {children}
+            </main>
+            <Toaster position="top-center" />
+          </AuthProvider>
+        </GoogleOAuthProvider>
       </body>
     </html>
   );
