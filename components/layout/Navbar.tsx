@@ -29,7 +29,7 @@ export default function Navbar() {
       { href: '/dashboard', label: 'Dashboard' },
       { href: '/chat', label: 'Messages', hasBadge: true },
     ] : []),
-    ...(user && user.role === 'admin' ? [
+    ...(user && (user.role === 'admin' || user.role === 'super_admin') ? [
         { href: '/admin', label: 'Admin', className: 'text-red-600 dark:text-red-400' }
     ] : [])
   ];
@@ -57,8 +57,10 @@ export default function Navbar() {
   return (
     <nav className="border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-black sticky top-0 z-50">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-2 font-bold text-xl text-blue-600 dark:text-blue-400 mr-8">
-          <span>Lost&Found</span>
+        <Link href="/" className="flex items-center gap-3 font-bold text-xl text-blue-600 dark:text-blue-400 mr-8">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="Reclaim Logo" className="w-8 h-8 object-contain" />
+          <span>Reclaim</span>
         </Link>
         
         <form onSubmit={handleSearch} className="hidden md:flex items-center flex-1 max-w-sm relative mr-4">

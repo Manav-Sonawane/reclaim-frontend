@@ -85,7 +85,7 @@ function HomeContent() {
       {!user && (
         <div className="mb-8 text-center sm:text-left flex flex-col sm:flex-row justify-between items-center bg-blue-50 dark:bg-gray-900 p-6 rounded-xl border border-blue-100 dark:border-gray-800">
             <div>
-                <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">Lost & Found Community</h1>
+                <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">Reclaim Community</h1>
                 <p className="mt-2 text-gray-600 dark:text-gray-400">Find what you lost. Return what you found.</p>
             </div>
             <Link href="/post" className="mt-4 sm:mt-0">

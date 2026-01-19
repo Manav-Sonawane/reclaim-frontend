@@ -77,7 +77,7 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
                 </div>
            </div>
 
-          <div className="aspect-video w-full bg-gray-100 rounded-xl overflow-hidden relative border border-gray-100 dark:border-gray-800">
+          <div className="aspect-square w-full bg-gray-100 dark:bg-gray-900 rounded-xl overflow-hidden relative border border-gray-100 dark:border-gray-800 flex items-center justify-center">
             {item.images.length > 0 ? (
                // eslint-disable-next-line @next/next/no-img-element
               <img src={item.images[0]} alt={item.title} className="h-full w-full object-cover" />

@@ -6,7 +6,8 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../lib/api';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
-import { Trash2, Shield, Search } from 'lucide-react';
+import { Modal } from '../../components/ui/Modal';
+import { Trash2, Shield, Search, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function AdminDashboard() {
@@ -18,6 +19,14 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<any[]>([]);
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Modal State
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    type: 'deleteUser' as 'deleteUser' | 'deleteItem' | 'promote' | 'demote' | 'removeAdmin',
+    id: '',
+    name: ''
+  });
 
   useEffect(() => {
     if (!authLoading) {
@@ -48,49 +57,40 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleDeleteUser = async (id: string) => {
-    if (!confirm('Are you sure? This will delete the user and all their items.')) return;
-    try {
-      await api.delete(`/admin/users/${id}`);
-      setUsers(users.filter(u => u._id !== id));
-      toast.success('User deleted');
-      fetchData(); // Refresh stats
-    } catch (error) {
-      toast.error('Failed to delete user');
-    }
+  const openConfirmModal = (type: typeof confirmModal.type, id: string, name: string = '') => {
+    setConfirmModal({ isOpen: true, type, id, name });
   };
 
-  const handleDeleteItem = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this item?')) return;
-    try {
-      await api.delete(`/admin/items/${id}`);
-      setItems(items.filter(i => i._id !== id));
-      toast.success('Item deleted');
-      fetchData(); // Refresh stats
-    } catch (error) {
-      toast.error('Failed to delete item');
-    }
+  const closeConfirmModal = () => {
+    setConfirmModal({ ...confirmModal, isOpen: false });
   };
 
-  const handleRemoveAdmin = async (id: string) => {
-    if (!confirm('Are you sure you want to remove Admin privileges from this user?')) return;
+  const executeAction = async () => {
+    const { type, id } = confirmModal;
+    
     try {
-      await api.put(`/admin/users/${id}/role`, { role: 'user' });
-      setUsers(users.map(u => u._id === id ? { ...u, role: 'user' } : u));
-      toast.success('Admin privileges removed');
+      if (type === 'deleteUser') {
+        await api.delete(`/admin/users/${id}`);
+        setUsers(users.filter(u => u._id !== id));
+        toast.success('User deleted');
+      } else if (type === 'deleteItem') {
+        await api.delete(`/admin/items/${id}`);
+        setItems(items.filter(i => i._id !== id));
+        toast.success('Item deleted');
+      } else if (type === 'promote') {
+        await api.put(`/admin/users/${id}/role`, { role: 'admin' });
+        setUsers(users.map(u => u._id === id ? { ...u, role: 'admin' } : u));
+        toast.success('User promoted to Admin');
+      } else if (type === 'demote' || type === 'removeAdmin') {
+        await api.put(`/admin/users/${id}/role`, { role: 'user' });
+        setUsers(users.map(u => u._id === id ? { ...u, role: 'user' } : u));
+        toast.success('Admin privileges removed');
+      }
+      fetchData(); // Refresh all data to be safe
+      closeConfirmModal();
     } catch (error) {
-      toast.error('Failed to update role');
-    }
-  };
-
-  const handleMakeAdmin = async (id: string) => {
-    if (!confirm('Are you sure you want to promote this user to Admin?')) return;
-    try {
-      await api.put(`/admin/users/${id}/role`, { role: 'admin' });
-      setUsers(users.map(u => u._id === id ? { ...u, role: 'admin' } : u));
-      toast.success('User promoted to Admin');
-    } catch (error) {
-      toast.error('Failed to update role');
+      toast.error('Action failed');
+      closeConfirmModal();
     }
   };
 
@@ -195,18 +195,18 @@ export default function AdminDashboard() {
                                <>
                                 {user.role === 'super_admin' && (
                                     u.role === 'admin' ? (
-                                        <Button variant="outline" size="sm" onClick={() => handleRemoveAdmin(u._id)} className="text-orange-600 hover:bg-orange-50 border-orange-200">
+                                        <Button variant="outline" size="sm" onClick={() => openConfirmModal('demote', u._id, u.name)} className="text-orange-600 hover:bg-orange-50 border-orange-200">
                                             <Shield className="w-4 h-4 mr-1" />
                                             Demote
                                         </Button>
                                     ) : (
-                                        <Button variant="outline" size="sm" onClick={() => handleMakeAdmin(u._id)} className="text-blue-600 hover:bg-blue-50 border-blue-200">
+                                        <Button variant="outline" size="sm" onClick={() => openConfirmModal('promote', u._id, u.name)} className="text-blue-600 hover:bg-blue-50 border-blue-200">
                                             <Shield className="w-4 h-4 mr-1" />
                                             Promote
                                         </Button>
                                     )
                                 )}
-                                <Button variant="outline" size="sm" onClick={() => handleDeleteUser(u._id)} className="text-red-500 hover:bg-red-50 border-red-200">
+                                <Button variant="outline" size="sm" onClick={() => openConfirmModal('deleteUser', u._id, u.name)} className="text-red-500 hover:bg-red-50 border-red-200">
                                     <Trash2 className="w-4 h-4" />
                                 </Button>
                                </>
@@ -239,7 +239,7 @@ export default function AdminDashboard() {
                     <tr key={item._id} className="border-b dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800">
                       <td className="py-3">
                          {item.images && item.images[0] ? (
-                             <img src={`http://localhost:5001${item.images[0]}`} alt="" className="w-10 h-10 object-cover rounded" />
+                             <img src={item.images[0]} alt="" className="w-10 h-10 object-cover rounded" />
                          ) : (
                              <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center">?</div>
                          )}
@@ -253,7 +253,7 @@ export default function AdminDashboard() {
                       <td className="py-3 text-gray-500">{item.user?.name || 'Unknown'}</td>
                       <td className="py-3 text-gray-500">{new Date(item.createdAt).toLocaleDateString()}</td>
                       <td className="py-3 text-right">
-                        <Button variant="outline" size="sm" onClick={() => handleDeleteItem(item._id)} className="text-red-500 hover:bg-red-50 border-red-200">
+                        <Button variant="outline" size="sm" onClick={() => openConfirmModal('deleteItem', item._id, item.title)} className="text-red-500 hover:bg-red-50 border-red-200">
                             <Trash2 className="w-4 h-4" />
                         </Button>
                       </td>
@@ -265,6 +265,47 @@ export default function AdminDashboard() {
           )}
         </div>
       </div>
+
+       {/* Confirmation Modal */}
+       <Modal
+        isOpen={confirmModal.isOpen}
+        onClose={closeConfirmModal}
+        title={
+            confirmModal.type === 'deleteUser' ? 'Delete User' :
+            confirmModal.type === 'deleteItem' ? 'Delete Item' :
+            confirmModal.type === 'promote' ? 'Promote User' :
+            'Demote Admin'
+        }
+      >
+        <div className="space-y-4">
+            <div className="flex items-center gap-3 text-amber-600 bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg">
+                <AlertTriangle className="w-6 h-6 shrink-0" />
+                <p className="text-sm font-medium">
+                    {confirmModal.type === 'deleteUser' && "Warning: This action cannot be undone. All items posted by this user will also be deleted."}
+                    {confirmModal.type === 'deleteItem' && "Warning: This action cannot be undone."}
+                    {(confirmModal.type === 'promote' || confirmModal.type === 'demote') && "This will change the user's access privileges immediately."}
+                </p>
+            </div>
+            
+            <p className="text-gray-600 dark:text-gray-400">
+                Are you sure you want to 
+                {confirmModal.type === 'deleteUser' && <span> delete user <strong>{confirmModal.name}</strong>?</span>}
+                {confirmModal.type === 'deleteItem' && <span> delete item <strong>{confirmModal.name}</strong>?</span>}
+                {confirmModal.type === 'promote' && <span> promote <strong>{confirmModal.name}</strong> to Admin?</span>}
+                {(confirmModal.type === 'demote' || confirmModal.type === 'removeAdmin') && <span> remove admin privileges from <strong>{confirmModal.name}</strong>?</span>}
+            </p>
+
+            <div className="flex justify-end gap-3 mt-4">
+                <Button variant="ghost" onClick={closeConfirmModal}>Cancel</Button>
+                <Button 
+                    variant={confirmModal.type.startsWith('delete') || confirmModal.type === 'demote' ? 'danger' : 'primary'}
+                    onClick={executeAction}
+                >
+                    Confirm
+                </Button>
+            </div>
+        </div>
+      </Modal>
     </div>
   );
 }
