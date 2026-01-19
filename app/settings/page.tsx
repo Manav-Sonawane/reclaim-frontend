@@ -1,5 +1,7 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
@@ -11,6 +13,12 @@ import { useTheme } from 'next-themes';
 export default function SettingsPage() {
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch by waiting for mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,21 +101,13 @@ export default function SettingsPage() {
                     <div className="flex items-center justify-between p-2">
                         <div>
                             <p className="font-medium">Email Notifications</p>
-                            <p className="text-sm text-gray-500">Receive emails about new matches.</p>
+                            <p className="text-sm text-gray-500">Receive emails when your items are claimed or matched.</p>
                         </div>
                         <div className="h-6 w-11 bg-blue-600 rounded-full relative cursor-pointer">
                              <div className="absolute right-1 top-1 h-4 w-4 bg-white rounded-full"></div>
                         </div>
                     </div>
-                     <div className="flex items-center justify-between p-2">
-                        <div>
-                            <p className="font-medium">Marketing Emails</p>
-                            <p className="text-sm text-gray-500">Receive updates about new features.</p>
-                        </div>
-                        <div className="h-6 w-11 bg-gray-200 dark:bg-gray-700 rounded-full relative cursor-pointer">
-                             <div className="absolute left-1 top-1 h-4 w-4 bg-white rounded-full"></div>
-                        </div>
-                    </div>
+
                 </CardContent>
             </Card>
 
