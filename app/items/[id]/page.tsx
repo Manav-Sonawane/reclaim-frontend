@@ -86,6 +86,12 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
                  <Tag className="w-5 h-5" />
                  <span>{item.category}</span>
                </div>
+               {item.user && typeof item.user === 'object' && (
+                 <div className="flex items-center gap-1">
+                   <span className="text-gray-400">Posted by</span>
+                   <span className="font-medium text-gray-900 dark:text-gray-100">{item.user.name}</span>
+                 </div>
+               )}
             </div>
           </div>
 

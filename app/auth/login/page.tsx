@@ -21,7 +21,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const { data } = await api.post('/auth/login', { email, password });
-      login(data.token, data);
+      login(data.token, data.user);
       toast.success('Logged in successfully!');
     } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       toast.error(error.response?.data?.message || 'Login failed');

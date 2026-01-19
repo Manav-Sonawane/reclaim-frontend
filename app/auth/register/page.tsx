@@ -22,7 +22,7 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const { data } = await api.post('/auth/register', { name, email, password });
-      login(data.token, data);
+      login(data.token, data.user);
       toast.success('Account created successfully!');
     } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       toast.error(error.response?.data?.message || 'Registration failed');

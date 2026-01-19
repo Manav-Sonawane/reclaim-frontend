@@ -63,6 +63,11 @@ export default function DashboardPage() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">My Dashboard</h1>
+        <Link href="/post">
+            <Button>
+                <span className="mr-2">+</span> Post New Item
+            </Button>
+        </Link>
       </div>
 
       <div className="grid gap-6">
