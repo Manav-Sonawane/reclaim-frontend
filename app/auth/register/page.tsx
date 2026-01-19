@@ -35,7 +35,7 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const { data } = await api.post('/auth/google', { 
-        credential: credentialResponse.credential 
+        token: credentialResponse.credential 
       });
       login(data.token, data);
       toast.success('Signed up with Google successfully!');

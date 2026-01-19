@@ -65,13 +65,6 @@ export default function Navbar() {
                             isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-gray-800/50'
                         } ${link.className || ''}`}
                     >
-                        {isActive && (
-                            <motion.span
-                                layoutId="navbar-active-pill"
-                                className="absolute inset-0 bg-white dark:bg-gray-800 rounded-full shadow-sm z-[-1]"
-                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                            />
-                        )}
                         {link.label}
                     </Link>
                 );
@@ -103,7 +96,7 @@ export default function Navbar() {
                             </div>
                             
                             <div className="p-1">
-                                <Link href="/dashboard" onClick={() => setIsProfileOpen(false)}>
+                                <Link href="/settings" onClick={() => setIsProfileOpen(false)}>
                                     <div className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-md cursor-pointer">
                                         Settings
                                     </div>

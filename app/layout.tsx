@@ -22,6 +22,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '../context/AuthContext';
 import Navbar from '../components/layout/Navbar';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { ThemeProvider } from '../components/providers/ThemeProvider';
 
 export default function RootLayout({
   children,
@@ -35,13 +36,20 @@ export default function RootLayout({
         suppressHydrationWarning={true}
       >
         <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''}>
-          <AuthProvider>
-            <Navbar />
-            <main className="min-h-[calc(100vh-4rem)]">
-              {children}
-            </main>
-            <Toaster position="top-center" />
-          </AuthProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <AuthProvider>
+              <Navbar />
+              <main className="min-h-[calc(100vh-4rem)]">
+                {children}
+              </main>
+              <Toaster position="top-center" />
+            </AuthProvider>
+          </ThemeProvider>
         </GoogleOAuthProvider>
       </body>
     </html>

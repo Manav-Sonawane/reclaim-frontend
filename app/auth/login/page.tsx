@@ -34,7 +34,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const { data } = await api.post('/auth/google', { 
-        credential: credentialResponse.credential 
+        token: credentialResponse.credential 
       });
       login(data.token, data);
       toast.success('Logged in with Google successfully!');
