@@ -8,7 +8,8 @@ interface User {
   _id: string;
   name: string;
   email: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'super_admin';
+  profilePicture?: string;
 }
 
 interface AuthContextType {

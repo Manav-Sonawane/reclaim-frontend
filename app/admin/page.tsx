@@ -21,7 +21,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!authLoading) {
-      if (!user || user.role !== 'admin') {
+      if (!user || (user.role !== 'admin' && user.role !== 'super_admin')) {
         router.push('/dashboard');
       } else {
         fetchData();
@@ -98,7 +98,7 @@ export default function AdminDashboard() {
     return <div className="p-8 text-center">Loading admin dashboard...</div>;
   }
 
-  if (!user || user.role !== 'admin') {
+  if (!user || (user.role !== 'admin' && user.role !== 'super_admin')) {
     return null; // Will redirect
   }
 
@@ -181,25 +181,30 @@ export default function AdminDashboard() {
                       <td className="py-3 font-medium">{u.name}</td>
                       <td className="py-3 text-gray-500">{u.email}</td>
                       <td className="py-3">
-                        <span className={`px-2 py-1 rounded-full text-xs ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'}`}>
-                          {u.role}
+                         <span className={`px-2 py-1 rounded-full text-xs 
+                            ${u.role === 'super_admin' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300' : 
+                              u.role === 'admin' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300' : 
+                              'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'}`}>
+                          {u.role === 'super_admin' ? 'Super Admin' : u.role === 'admin' ? 'Admin' : 'User'}
                         </span>
                       </td>
                       <td className="py-3 text-gray-500">{new Date(u.createdAt).toLocaleDateString()}</td>
                       <td className="py-3 text-right">
                         <div className="flex justify-end gap-2">
-                           {u._id !== user._id && (
+                           {u._id !== user._id && u.role !== 'super_admin' && (
                                <>
-                                {u.role !== 'admin' ? (
-                                    <Button variant="outline" size="sm" onClick={() => handleMakeAdmin(u._id)} className="text-blue-600 hover:bg-blue-50 border-blue-200">
-                                        <Shield className="w-4 h-4 mr-1" />
-                                        Make Admin
-                                    </Button>
-                                ) : (
-                                    <Button variant="outline" size="sm" onClick={() => handleRemoveAdmin(u._id)} className="text-orange-600 hover:bg-orange-50 border-orange-200">
-                                        <Shield className="w-4 h-4 mr-1" />
-                                        Remove Admin
-                                    </Button>
+                                {user.role === 'super_admin' && (
+                                    u.role === 'admin' ? (
+                                        <Button variant="outline" size="sm" onClick={() => handleRemoveAdmin(u._id)} className="text-orange-600 hover:bg-orange-50 border-orange-200">
+                                            <Shield className="w-4 h-4 mr-1" />
+                                            Demote
+                                        </Button>
+                                    ) : (
+                                        <Button variant="outline" size="sm" onClick={() => handleMakeAdmin(u._id)} className="text-blue-600 hover:bg-blue-50 border-blue-200">
+                                            <Shield className="w-4 h-4 mr-1" />
+                                            Promote
+                                        </Button>
+                                    )
                                 )}
                                 <Button variant="outline" size="sm" onClick={() => handleDeleteUser(u._id)} className="text-red-500 hover:bg-red-50 border-red-200">
                                     <Trash2 className="w-4 h-4" />
