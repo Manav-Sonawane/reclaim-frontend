@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import api from '../lib/api';
-import { useRouter } from 'next/navigation';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import api from "../lib/api";
+import { useRouter } from "next/navigation";
 
 interface User {
   _id: string;
   name: string;
   email: string;
-  role: 'user' | 'admin' | 'super_admin';
+  role: "user" | "admin" | "super_admin";
   profilePicture?: string;
 }
 
@@ -29,16 +35,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (token) {
         try {
           // If we had a persist endpoint we'd verify here, or just decode if we trust local storage for UI state
           // For now, let's fetch 'me' to be safe
-          const { data } = await api.get('/auth/me');
+          const { data } = await api.get("/auth/me");
           setUser(data);
         } catch (error) {
           console.error("Auth check failed:", error);
-          localStorage.removeItem('token');
+          localStorage.removeItem("token");
         }
       }
       setLoading(false);
@@ -48,15 +54,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = (token: string, userData: User) => {
-    localStorage.setItem('token', token);
+    localStorage.setItem("token", token);
     setUser(userData);
-    router.push('/dashboard');
+    router.push("/dashboard");
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
     setUser(null);
-    router.push('/auth/login');
+    router.push("/auth/login");
   };
 
   const updateUser = (userData: User) => {
@@ -73,7 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

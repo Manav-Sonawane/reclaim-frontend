@@ -1,21 +1,22 @@
-'use client';
+"use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useEffect, useState, useRef, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { useAuth } from '../../context/AuthContext';
-import api from '../../lib/api';
-import { io, Socket } from 'socket.io-client';
-import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
-import { Card } from '../../components/ui/Card';
-import { Send, User as UserIcon } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { useEffect, useState, useRef, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useAuth } from "../../context/AuthContext";
+import api from "../../lib/api";
+import { io, Socket } from "socket.io-client";
+import { Button } from "../../components/ui/Button";
+import { Input } from "../../components/ui/Input";
+import { Card } from "../../components/ui/Card";
+import { Send, User as UserIcon } from "lucide-react";
+import toast from "react-hot-toast";
 
 function ChatContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const itemId = searchParams.get('itemId');
-  const chatIdParam = searchParams.get('chatId');
+  const itemId = searchParams.get("itemId");
+  const chatIdParam = searchParams.get("chatId");
   const { user } = useAuth();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -24,29 +25,31 @@ function ChatContent() {
   const [activeChat, setActiveChat] = useState<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [messages, setMessages] = useState<any[]>([]);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const [socket, setSocket] = useState<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const processingRef = useRef(false);
 
   // Initialize Socket
   useEffect(() => {
-    const url = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5001';
-    console.log('Connecting to socket at:', url);
+    const url =
+      process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") ||
+      "http://localhost:5001";
+    console.log("Connecting to socket at:", url);
     const newSocket = io(url);
-    
-    newSocket.on('connect', () => {
-      console.log('Socket connected:', newSocket.id);
+
+    newSocket.on("connect", () => {
+      console.log("Socket connected:", newSocket.id);
     });
 
-    newSocket.on('connect_error', (err) => {
-      console.error('Socket connection error:', err);
+    newSocket.on("connect_error", (err) => {
+      console.error("Socket connection error:", err);
     });
 
     setSocket(newSocket);
 
     return () => {
-      console.log('Disconnecting socket');
+      console.log("Disconnecting socket");
       newSocket.disconnect();
     };
   }, []);
@@ -55,10 +58,10 @@ function ChatContent() {
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        const { data } = await api.get('/chats');
+        const { data } = await api.get("/chats");
         setChats(data);
       } catch (error) {
-        console.error('Error fetching chats:', error);
+        console.error("Error fetching chats:", error);
       }
     };
     if (user) fetchChats();
@@ -70,21 +73,23 @@ function ChatContent() {
       if (itemId && user && !processingRef.current) {
         processingRef.current = true;
         try {
-          const { data } = await api.post('/chats', { itemId });
-          setChats(prev => {
-            if (!prev.find(c => c._id === data._id)) {
+          const { data } = await api.post("/chats", { itemId });
+          setChats((prev) => {
+            if (!prev.find((c) => c._id === data._id)) {
               return [data, ...prev];
             }
             return prev;
           });
           setActiveChat(data);
         } catch (error) {
-          toast.error('Failed to start chat');
+          toast.error("Failed to start chat");
         } finally {
-          // Optional: reset ref if you want to allow re-trying, 
+          // Optional: reset ref if you want to allow re-trying,
           // but for itemId param we typically only need to do this once per mount/param change.
           // Keeping it true prevents double-firing.
-          setTimeout(() => { processingRef.current = false; }, 1000);
+          setTimeout(() => {
+            processingRef.current = false;
+          }, 1000);
         }
       }
     };
@@ -93,13 +98,13 @@ function ChatContent() {
 
   // Scroll to bottom
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, activeChat]);
 
   // Join Room & Listen & Mark Read
   useEffect(() => {
     if (socket && activeChat) {
-      socket.emit('join_room', activeChat._id);
+      socket.emit("join_room", activeChat._id);
 
       // Mark as read
       api.put(`/chats/${activeChat._id}/read`).catch(console.error);
@@ -109,14 +114,15 @@ function ChatContent() {
         setMessages(activeChat.messages);
       }
 
-      const handleMessage = (msg: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
-        setMessages(prev => [...prev, msg]);
+      const handleMessage = (msg: any) => {
+        // eslint-disable-line @typescript-eslint/no-explicit-any
+        setMessages((prev) => [...prev, msg]);
       };
 
-      socket.on('receive_message', handleMessage);
+      socket.on("receive_message", handleMessage);
 
       return () => {
-        socket.off('receive_message', handleMessage);
+        socket.off("receive_message", handleMessage);
       };
     }
   }, [socket, activeChat]);
@@ -127,11 +133,11 @@ function ChatContent() {
     const msgData = {
       chatId: activeChat._id,
       senderId: user?._id,
-      text: newMessage
+      text: newMessage,
     };
 
-    socket.emit('send_message', msgData);
-    setNewMessage('');
+    socket.emit("send_message", msgData);
+    setNewMessage("");
   };
 
   return (
@@ -142,31 +148,45 @@ function ChatContent() {
           Messages
         </div>
         <div className="flex-1 overflow-y-auto">
-          {chats.map(chat => {
+          {chats.map((chat) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const otherParticipant = chat.participants.find((p: any) => p._id !== user?._id);
+            const otherParticipant = chat.participants.find(
+              (p: any) => p._id !== user?._id,
+            );
             return (
               <div
                 key={chat._id}
                 onClick={() => setActiveChat(chat)}
-                className={`p-4 border-b border-gray-100 dark:border-gray-900 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors flex items-center gap-3 ${activeChat?._id === chat._id ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
+                className={`p-4 border-b border-gray-100 dark:border-gray-900 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors flex items-center gap-3 ${activeChat?._id === chat._id ? "bg-blue-50 dark:bg-blue-900/20" : ""}`}
               >
                 <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 overflow-hidden flex-shrink-0">
                   {otherParticipant?.profilePicture ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={otherParticipant.profilePicture} alt={otherParticipant.name} className="h-full w-full object-cover" />
+                    <img
+                      src={otherParticipant.profilePicture}
+                      alt={otherParticipant.name}
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
                     <UserIcon className="w-5 h-5" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold truncate">{otherParticipant?.name || 'Unknown User'}</div>
-                  <div className="text-sm text-gray-500 truncate">{chat.item?.title}</div>
+                  <div className="font-semibold truncate">
+                    {otherParticipant?.name || "Unknown User"}
+                  </div>
+                  <div className="text-sm text-gray-500 truncate">
+                    {chat.item?.title}
+                  </div>
                 </div>
               </div>
             );
           })}
-          {chats.length === 0 && <div className="p-4 text-center text-gray-500">No conversations yet</div>}
+          {chats.length === 0 && (
+            <div className="p-4 text-center text-gray-500">
+              No conversations yet
+            </div>
+          )}
         </div>
       </Card>
 
@@ -178,18 +198,24 @@ function ChatContent() {
               <div className="font-bold flex items-center gap-3">
                 {(() => {
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  const otherParticipant = activeChat.participants.find((p: any) => p._id !== user?._id);
+                  const otherParticipant = activeChat.participants.find(
+                    (p: any) => p._id !== user?._id,
+                  );
                   return (
                     <>
                       <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 overflow-hidden">
                         {otherParticipant?.profilePicture ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={otherParticipant.profilePicture} alt={otherParticipant?.name} className="h-full w-full object-cover" />
+                          <img
+                            src={otherParticipant.profilePicture}
+                            alt={otherParticipant?.name}
+                            className="h-full w-full object-cover"
+                          />
                         ) : (
                           <UserIcon className="w-5 h-5" />
                         )}
                       </div>
-                      <span>{otherParticipant?.name || 'Unknown User'}</span>
+                      <span>{otherParticipant?.name || "Unknown User"}</span>
                     </>
                   );
                 })()}
@@ -201,17 +227,30 @@ function ChatContent() {
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white dark:bg-black">
               {messages.map((msg, idx) => {
-                const isMe = msg.sender === user?._id || msg.sender?._id === user?._id;
+                const isMe =
+                  msg.sender === user?._id || msg.sender?._id === user?._id;
                 return (
-                  <div key={idx} className={`flex gap-2 ${isMe ? 'justify-end' : 'justify-start'}`}>
+                  <div
+                    key={idx}
+                    className={`flex gap-2 ${isMe ? "justify-end" : "justify-start"}`}
+                  >
                     {!isMe && (
                       <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-800 flex-shrink-0 overflow-hidden self-end mb-1">
                         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                        {activeChat.participants.find((p: any) => p._id === msg.sender || p._id === msg.sender?._id)?.profilePicture ? (
+                        {activeChat.participants.find(
+                          (p: any) =>
+                            p._id === msg.sender || p._id === msg.sender?._id,
+                        )?.profilePicture ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            src={activeChat.participants.find((p: any) => p._id === msg.sender || p._id === msg.sender?._id)?.profilePicture}
+                            src={
+                              activeChat.participants.find(
+                                (p: any) =>
+                                  p._id === msg.sender ||
+                                  p._id === msg.sender?._id,
+                              )?.profilePicture
+                            }
                             className="h-full w-full object-cover"
                             alt="Sender"
                           />
@@ -222,10 +261,15 @@ function ChatContent() {
                         )}
                       </div>
                     )}
-                    <div className={`max-w-[70%] rounded-lg px-4 py-2 ${isMe ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                    <div
+                      className={`max-w-[70%] rounded-lg px-4 py-2 ${isMe ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-800"}`}
+                    >
                       <p>{msg.text || msg.content}</p>
                       <span className="text-xs opacity-70 block text-right mt-1">
-                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(msg.timestamp).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </span>
                     </div>
                   </div>
@@ -238,7 +282,7 @@ function ChatContent() {
               <Input
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                 placeholder="Type a message..."
                 className="flex-1"
               />

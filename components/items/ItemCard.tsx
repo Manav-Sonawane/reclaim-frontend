@@ -1,16 +1,15 @@
-import Link from 'next/link';
-import { Card, CardContent, CardFooter } from '../ui/Card';
-import { User, ArrowBigUp, ArrowBigDown } from 'lucide-react';
-import { CategoryBadge } from '../ui/CategoryBadge';
-import { LocationBadge } from '../ui/LocationBadge';
-import { useAuth } from '../../context/AuthContext';
-import { useState } from 'react';
-import api from '../../lib/api';
+import Link from "next/link";
+import { Card, CardContent, CardFooter } from "../ui/Card";
+import { User } from "lucide-react";
+import { CategoryBadge } from "../ui/CategoryBadge";
+import { LocationBadge } from "../ui/LocationBadge";
+import { useAuth } from "../../context/AuthContext";
+import { useState } from "react";
 
 interface Item {
   _id: string;
   title: string;
-  type: 'lost' | 'found';
+  type: "lost" | "found";
   category: string;
   description: string;
   images: string[];
@@ -28,63 +27,64 @@ interface Item {
 }
 
 export default function ItemCard({ item }: { item: Item }) {
-  const { user } = useAuth();
-  const [upvotes, setUpvotes] = useState<string[]>(item.upvotes || []);
-  const [downvotes, setDownvotes] = useState<string[]>(item.downvotes || []);
-  const [isLoading, setIsLoading] = useState(false);
+  // const [upvotes, setUpvotes] = useState<string[]>(item.upvotes || []);
+  // const [downvotes, setDownvotes] = useState<string[]>(item.downvotes || []);
 
-  const isUpvoted = user && upvotes.includes(user._id);
-  const isDownvoted = user && downvotes.includes(user._id);
+  // const isUpvoted = user && upvotes.includes(user._id);
+  // const isDownvoted = user && downvotes.includes(user._id);
 
-  const score = upvotes.length - downvotes.length;
+  // const score = upvotes.length - downvotes.length;
 
-  const handleVote = async (e: React.MouseEvent, type: 'up' | 'down') => {
-    e.preventDefault(); // Prevent link navigation
-    e.stopPropagation();
+  // const handleVote = async (e: React.MouseEvent, type: "up" | "down") => {
+  //   e.preventDefault(); // Prevent link navigation
+  //   e.stopPropagation();
 
-    if (!user) {
-      // Optional: Redirect to login or show toast. For now just ignore.
-      return;
-    }
+  //   if (!user) {
+  //     // Optional: Redirect to login or show toast. For now just ignore.
+  //     return;
+  //   }
 
-    if (isLoading) return;
+  //   if (isLoading) return;
 
-    // Optimistic Update
-    const oldUpvotes = [...upvotes];
-    const oldDownvotes = [...downvotes];
-    const userId = user._id;
+  //   // Optimistic Update
+  //   const oldUpvotes = [...upvotes];
+  //   const oldDownvotes = [...downvotes];
+  //   const userId = user._id;
 
-    if (type === 'up') {
-      if (isUpvoted) {
-        setUpvotes(prev => prev.filter(id => id !== userId));
-      } else {
-        setUpvotes(prev => [...prev, userId]);
-        if (isDownvoted) setDownvotes(prev => prev.filter(id => id !== userId));
-      }
-    } else {
-      if (isDownvoted) {
-        setDownvotes(prev => prev.filter(id => id !== userId));
-      } else {
-        setDownvotes(prev => [...prev, userId]);
-        if (isUpvoted) setUpvotes(prev => prev.filter(id => id !== userId));
-      }
-    }
+  //   if (type === "up") {
+  //     if (isUpvoted) {
+  //       setUpvotes((prev) => prev.filter((id) => id !== userId));
+  //     } else {
+  //       setUpvotes((prev) => [...prev, userId]);
+  //       if (isDownvoted)
+  //         setDownvotes((prev) => prev.filter((id) => id !== userId));
+  //     }
+  //   } else {
+  //     if (isDownvoted) {
+  //       setDownvotes((prev) => prev.filter((id) => id !== userId));
+  //     } else {
+  //       setDownvotes((prev) => [...prev, userId]);
+  //       if (isUpvoted) setUpvotes((prev) => prev.filter((id) => id !== userId));
+  //     }
+  //   }
 
-    setIsLoading(true);
-    try {
-      const { data } = await api.post(`/items/${item._id}/vote`, { voteType: type });
-      // Sync with server response to be sure
-      setUpvotes(data.upvotes);
-      setDownvotes(data.downvotes);
-    } catch (error) {
-      console.error('Vote failed:', error);
-      // Revert
-      setUpvotes(oldUpvotes);
-      setDownvotes(oldDownvotes);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //   setIsLoading(true);
+  //   try {
+  //     const { data } = await api.post(`/items/${item._id}/vote`, {
+  //       voteType: type,
+  //     });
+  //     // Sync with server response to be sure
+  //     setUpvotes(data.upvotes);
+  //     setDownvotes(data.downvotes);
+  //   } catch (error) {
+  //     console.error("Vote failed:", error);
+  //     // Revert
+  //     setUpvotes(oldUpvotes);
+  //     setDownvotes(oldDownvotes);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   return (
     <Link href={`/items/${item._id}`}>
@@ -96,17 +96,19 @@ export default function ItemCard({ item }: { item: Item }) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-              {item.user?.name || 'Unknown User'}
+              {item.user?.name || "Unknown User"}
             </p>
             <p className="text-xs text-gray-500 truncate">
               {new Date(item.date).toLocaleDateString()}
             </p>
           </div>
-            <span className={`ml-auto px-2 py-1 rounded-full text-xs font-medium uppercase ${
-              item.type === 'lost' 
-                ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' 
-                : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-            }`}>
+          <span
+            className={`ml-auto px-2 py-1 rounded-full text-xs font-medium uppercase ${
+              item.type === "lost"
+                ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+            }`}
+          >
             {item.type}
           </span>
         </div>
@@ -140,28 +142,45 @@ export default function ItemCard({ item }: { item: Item }) {
           <CategoryBadge category={item.category} />
 
           {/* Voting Controls */}
-          <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-full px-2 py-1">
+          {/* <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-full px-2 py-1">
             <button
-              onClick={(e) => handleVote(e, 'up')}
-              className={`p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${isUpvoted ? 'text-orange-600 dark:text-orange-500' : 'text-gray-500 dark:text-gray-400'
-                }`}
+              onClick={(e) => handleVote(e, "up")}
+              className={`p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${
+                isUpvoted
+                  ? "text-orange-600 dark:text-orange-500"
+                  : "text-gray-500 dark:text-gray-400"
+              }`}
             >
-              <ArrowBigUp className={`w-6 h-6 ${isUpvoted ? 'fill-current' : ''}`} />
+              <ArrowBigUp
+                className={`w-6 h-6 ${isUpvoted ? "fill-current" : ""}`}
+              />
             </button>
 
-            <span className={`text-xs font-bold w-4 text-center ${score > 0 ? 'text-orange-600 dark:text-orange-500' : score < 0 ? 'text-blue-600 dark:text-blue-500' : 'text-gray-500'
-              }`}>
+            <span
+              className={`text-xs font-bold w-4 text-center ${
+                score > 0
+                  ? "text-orange-600 dark:text-orange-500"
+                  : score < 0
+                    ? "text-blue-600 dark:text-blue-500"
+                    : "text-gray-500"
+              }`}
+            >
               {score}
             </span>
 
             <button
-              onClick={(e) => handleVote(e, 'down')}
-              className={`p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${isDownvoted ? 'text-blue-600 dark:text-blue-500' : 'text-gray-500 dark:text-gray-400'
-                }`}
+              onClick={(e) => handleVote(e, "down")}
+              className={`p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${
+                isDownvoted
+                  ? "text-blue-600 dark:text-blue-500"
+                  : "text-gray-500 dark:text-gray-400"
+              }`}
             >
-              <ArrowBigDown className={`w-6 h-6 ${isDownvoted ? 'fill-current' : ''}`} />
+              <ArrowBigDown
+                className={`w-6 h-6 ${isDownvoted ? "fill-current" : ""}`}
+              />
             </button>
-          </div>
+          </div> */}
         </CardFooter>
       </Card>
     </Link>
