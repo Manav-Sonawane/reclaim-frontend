@@ -101,22 +101,36 @@ function ChatContent() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, activeChat]);
 
-  // Join Room & Listen & Mark Read
+  // Fetch Fresh Messages & Join Room
+  useEffect(() => {
+    if (activeChat) {
+      // 1. Optimistically show stale messages (better than empty)
+      setMessages(activeChat.messages || []);
+
+      // 2. Fetch latest messages from DB
+      api.get(`/chats/${activeChat._id}`)
+        .then(({ data }) => {
+            setMessages(data.messages || []);
+        })
+        .catch(console.error);
+        
+      // 3. Mark as read
+      api.put(`/chats/${activeChat._id}/read`).catch(console.error); // Fire and forget
+    }
+  }, [activeChat]);
+
+  // Socket Listeners
   useEffect(() => {
     if (socket && activeChat) {
       socket.emit("join_room", activeChat._id);
 
-      // Mark as read
-      api.put(`/chats/${activeChat._id}/read`).catch(console.error);
-
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      if ((activeChat.messages || []).length > 0) {
-        setMessages(activeChat.messages);
-      }
-
       const handleMessage = (msg: any) => {
         // eslint-disable-line @typescript-eslint/no-explicit-any
-        setMessages((prev) => [...prev, msg]);
+        setMessages((prev) => {
+            // Avoid duplicates just in case
+            if (prev.some(m => m.timestamp === msg.timestamp && m.content === msg.text)) return prev;
+            return [...prev, msg];
+        });
       };
 
       socket.on("receive_message", handleMessage);
@@ -176,7 +190,10 @@ function ChatContent() {
                     {otherParticipant?.name || "Unknown User"}
                   </div>
                   <div className="text-sm text-gray-500 truncate">
-                    {chat.item?.title}
+                    {chat.messages && chat.messages.length > 0 
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        ? (chat.messages[chat.messages.length - 1] as any).content || (chat.messages[chat.messages.length - 1] as any).text || "Sent a message"
+                        : "No messages yet"}
                   </div>
                 </div>
               </div>
@@ -220,9 +237,6 @@ function ChatContent() {
                   );
                 })()}
               </div>
-              <div className="text-sm text-gray-500">
-                Item: {activeChat.item?.title}
-              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white dark:bg-black">
@@ -231,7 +245,7 @@ function ChatContent() {
                   msg.sender === user?._id || msg.sender?._id === user?._id;
                 return (
                   <div
-                    key={idx}
+                    key={msg._id || idx}
                     className={`flex gap-2 ${isMe ? "justify-end" : "justify-start"}`}
                   >
                     {!isMe && (

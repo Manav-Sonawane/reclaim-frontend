@@ -174,8 +174,6 @@ export default function Navbar() {
               </Link>
             </div>
           )}
-        </div>
-
 
           {/* Theme Toggle */}
           <Button
@@ -187,6 +185,7 @@ export default function Navbar() {
           >
             {mounted && theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
+        </div>
 
           {/* Mobile Menu Button */}
           <div className="flex md:hidden items-center gap-2">

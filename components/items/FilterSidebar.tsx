@@ -338,7 +338,7 @@ export default function FilterSidebar({ filters, onFilterChange }: FilterSidebar
                 onKeyDown={(e) => e.key === 'Enter' && handleLocationSubmit()}
                 className="h-9 text-sm"
             />
-            <Button size="sm" variant="outline" onClick={handleLocationSubmit} disabled={isGeocoding}>
+            <Button size="sm" className="h-9" variant="outline" onClick={handleLocationSubmit} disabled={isGeocoding}>
                 {isGeocoding ? '...' : 'Go'}
             </Button>
         </div>

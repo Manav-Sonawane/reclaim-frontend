@@ -102,7 +102,7 @@ export default function ItemActions({ item, user, myClaim, onClaimClick }: ItemA
         <>
              <div className="flex gap-3">
                  <Button className="flex-1" onClick={() => router.push(`/chat?itemId=${item._id}`)}>
-                    <MessageSquare className="mr-2 h-4 w-4" /> Message Finder
+                    <MessageSquare className="mr-2 h-4 w-4" /> Message
                 </Button>
                 <Button variant="secondary" className="flex-1" onClick={() => {
                      const shareUrl = window.location.href;
