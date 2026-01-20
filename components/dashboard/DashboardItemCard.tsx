@@ -51,7 +51,17 @@ export default function DashboardItemCard({ item, onDelete, onManageClaims }: Da
 
     return (
         <Link href={`/items/${item._id}`}>
-            <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+            <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer relative group">
+                <div className="absolute top-2 right-2 z-10">
+                    <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase shadow-sm ${
+                        item.status === 'open'
+                            ? 'bg-blue-500 text-white border border-blue-600'
+                            : 'bg-gray-500 text-white border border-gray-600'
+                    }`}>
+                        {item.status === 'open' ? 'OPEN' : 'CLOSED'}
+                    </span>
+                </div>
+
                 {item.images && item.images.length > 0 && (
                     <div className="aspect-square w-full bg-gray-100 relative overflow-hidden">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -64,7 +74,7 @@ export default function DashboardItemCard({ item, onDelete, onManageClaims }: Da
                 )}
                 <CardHeader className="pb-2">
                     <div className="flex justify-between items-start">
-                        <CardTitle className="text-lg font-bold truncate">{item.title}</CardTitle>
+                        <CardTitle className="text-lg font-bold truncate pr-12">{item.title}</CardTitle>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium uppercase ${
                             item.type === 'lost'
                                 ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'

@@ -55,7 +55,7 @@ export default function ItemActions({ item, user, myClaim, onClaimClick }: ItemA
   if (myClaim) {
     return (
       <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
-        <h4 className="font-semibold mb-2">Claim Status</h4>
+        <h4 className="font-semibold mb-2">{item.type === 'found' ? 'Claim Status' : 'Retrieval Status'}</h4>
         <div className="flex items-center gap-2 mb-2">
           <span
             className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${
@@ -77,17 +77,17 @@ export default function ItemActions({ item, user, myClaim, onClaimClick }: ItemA
             className="w-full mt-2"
             onClick={() => router.push(`/chat?itemId=${item._id}`)}
           >
-            <MessageSquare className="mr-2 h-4 w-4" /> Chat with Finder
+            <MessageSquare className="mr-2 h-4 w-4" /> Chat with {item.type === 'found' ? 'Finder' : 'Owner'}
           </Button>
         )}
         {myClaim.status === "rejected" && (
           <p className="text-xs text-red-500 mt-2">
-            Your claim was not approved.
+            Your {item.type === 'found' ? 'claim' : 'request'} was not approved.
           </p>
         )}
         {myClaim.status === "pending" && (
           <p className="text-xs text-gray-500 mt-2">
-            Waiting for finder to review.
+            Waiting for {item.type === 'found' ? 'finder' : 'owner'} to review.
           </p>
         )}
       </div>

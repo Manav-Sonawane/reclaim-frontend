@@ -21,7 +21,9 @@ export default function DashboardPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [myItems, setMyItems] = useState<any[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [myClaims, setMyClaims] = useState<any[]>([]);
+  const [myClaims, setMyClaims] = useState<any[]>([]); // Items I claimed (Found by others)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [myRetrievals, setMyRetrievals] = useState<any[]>([]); // Items I reported finding (Lost by others)
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; itemId: string | null }>({
     isOpen: false,
     itemId: null
@@ -50,9 +52,17 @@ export default function DashboardPage() {
         const { data } = await api.get('/items/user/me');
         setMyItems(data);
 
-        // Fetch My Claims
+        // Fetch My Claims & Retrievals
         const { data: claimsData } = await api.get('/claims/user/me');
-        setMyClaims(claimsData);
+        
+        // Split based on item type
+        // If I claimed a 'found' item -> My Claim
+        // If I claimed a 'lost' item (meaning I found it) -> My Retrieval request
+        const claims = claimsData.filter((c: any) => c.item?.type === 'found');
+        const retrievals = claimsData.filter((c: any) => c.item?.type === 'lost');
+        
+        setMyClaims(claims);
+        setMyRetrievals(retrievals);
       } catch (error) {
         console.error('Failed to fetch items', error);
       } finally {
@@ -178,9 +188,38 @@ export default function DashboardPage() {
         )}
       </div>
 
-       {/* My Claims Section */}
+
+
+
+
+       {/* My Retrievals History - Items I found and reported */}
       <div className="grid gap-6 mt-12">
-        <h2 className="text-xl font-semibold border-b border-gray-200 dark:border-gray-800 pb-2">My Claims</h2>
+        <h2 className="text-xl font-semibold border-b border-gray-200 dark:border-gray-800 pb-2">My Retrievals (Items I Found)</h2>
+         {loading ? (
+             <div>Loading...</div>
+        ) : myRetrievals.length === 0 ? (
+            <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-700">
+                <div className="text-6xl mb-4">🔍</div>
+                <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">No retrievals yet</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">You haven't reported finding any lost items yet</p>
+            </div>
+        ) : (
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {myRetrievals.map((claim) => (
+                    <ClaimCard 
+                        key={claim._id} 
+                        claim={claim} 
+                        onEdit={handleEditClaimClick} 
+                        onDelete={handleDeleteClaimClick}
+                    />
+                ))}
+             </div>
+        )}
+      </div>
+
+       {/* My Claims Section - Items I claimed */}
+      <div className="grid gap-6 mt-12">
+        <h2 className="text-xl font-semibold border-b border-gray-200 dark:border-gray-800 pb-2">My Claims (Items I Lost)</h2>
          {loading ? (
              <div>Loading...</div>
         ) : myClaims.length === 0 ? (

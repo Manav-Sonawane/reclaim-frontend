@@ -17,7 +17,9 @@ export default function ClaimCard({ claim, onEdit, onDelete }: ClaimCardProps) {
             <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
                     <div>
-                        <p className="text-xs text-gray-500 uppercase tracking-widest mb-1">Claim for</p>
+                        <p className="text-xs text-gray-500 uppercase tracking-widest mb-1">
+                            {claim.item?.type === 'lost' ? 'Retrieval for' : 'Claim for'}
+                        </p>
                         <CardTitle className="text-lg font-bold truncate">{claim.item?.title || 'Unknown Item'}</CardTitle>
                     </div>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium uppercase border ${

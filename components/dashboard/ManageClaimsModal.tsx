@@ -52,11 +52,6 @@ export default function ManageClaimsModal({ isOpen, onClose, itemId, itemTitle, 
             
             // Refresh list to show updated status
             fetchClaims();
-            
-            if (status === 'approved') {
-                // Ideally, close modal or show success state
-                // keeping it open to show the "Approved" badge
-            }
         } catch (error) {
             console.error(error);
             toast.error(`Failed to ${status} request`);
@@ -64,6 +59,24 @@ export default function ManageClaimsModal({ isOpen, onClose, itemId, itemTitle, 
             setProcessingId(null);
         }
     };
+
+    const handleResolve = async (claimId: string) => {
+        setProcessingId(claimId);
+        try {
+            await api.put(`/claims/${claimId}/resolve`);
+            toast.success(`Item marked as ${itemType === 'found' ? 'retrieved' : 'claimed'}!`);
+            fetchClaims();
+            // Optional: Close modal after success since item status changes
+            setTimeout(onClose, 1000); 
+        } catch (error) {
+            console.error(error);
+            toast.error(`Failed to mark as ${itemType === 'found' ? 'retrieved' : 'claimed'}`);
+        } finally {
+            setProcessingId(null);
+        }
+    };
+
+
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={`${itemType === 'found' ? 'Claims' : 'Retrievals'} for: ${itemTitle}`}>
@@ -150,6 +163,20 @@ export default function ManageClaimsModal({ isOpen, onClose, itemId, itemTitle, 
                                             <CheckCircle className="w-4 h-4 mr-1" /> {itemType === 'found' ? 'Verify & Approve' : 'Accept Retrieval'}
                                         </Button>
                                     </div>
+                                )}
+
+                                {/* Approved State Actions */}
+                                {claim.status === 'approved' && (
+                                     <div className="flex gap-2 justify-end mt-2 pt-2 border-t dark:border-gray-700">
+                                        <Button
+                                            size="sm"
+                                            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                                            onClick={() => handleResolve(claim._id)}
+                                            disabled={!!processingId}
+                                        >
+                                            <CheckCircle className="w-4 h-4 mr-1" /> {itemType === 'found' ? 'Mark as Retrieved' : 'Mark as Claimed'}
+                                        </Button>
+                                     </div>
                                 )}
                             </div>
                         ))}
