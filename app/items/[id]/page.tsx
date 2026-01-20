@@ -7,7 +7,7 @@ import api from '../../../lib/api';
 import { useAuth } from '../../../context/AuthContext';
 import { Button } from '../../../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card';
-import ItemCard from '../../../components/items/ItemCard';
+
 import { MapPin, Calendar, ArrowLeft, MessageSquare, CheckCircle, User, ArrowBigUp, ArrowBigDown } from 'lucide-react';
 import { CategoryBadge } from '../../../components/ui/CategoryBadge';
 import { LocationBadge } from '../../../components/ui/LocationBadge';
@@ -19,8 +19,7 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
   const { user } = useAuth();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [item, setItem] = useState<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [matches, setMatches] = useState<any[]>([]);
+
   const [loading, setLoading] = useState(true);
 
   // Unwrap params using React.use()
@@ -32,9 +31,7 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
         const { data: itemData } = await api.get(`/items/${id}`);
         setItem(itemData);
 
-        // Fetch matches
-        const { data: matchesData } = await api.get(`/items/${id}/matches`);
-        setMatches(matchesData);
+
       } catch (error) {
         console.error('Error fetching item:', error);
         toast.error('Could not load item details');
@@ -121,17 +118,11 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
         {/* Main Details */}
         <div className="lg:col-span-2 space-y-4">
           {/* Instagram-style Header */}
-          <div className="flex items-center gap-3 py-2">
-            <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
-              <User className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="font-semibold text-gray-900 dark:text-gray-100">
-                {typeof item.user === 'object' ? item.user?.name : 'Unknown User'}
-              </p>
-              <p className="text-xs text-gray-500">
-                Posted on {new Date(item.date).toLocaleDateString()}
-              </p>
+          <div className="mb-4">
+            <h1 className="text-3xl font-bold">{item.title}</h1>
+            <div className="flex flex-wrap gap-4 mt-2 text-gray-500">
+              <LocationBadge location={item.location?.address} className="text-sm px-3 py-1.5 max-w-none" />
+              <CategoryBadge category={item.category} className="text-sm px-3 py-1.5" />
             </div>
           </div>
 
@@ -152,6 +143,29 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
 
         {/* Sidebar / Actions */}
         <div className="space-y-6">
+          <div className="flex items-center gap-3 py-2 mb-4">
+            <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+              <User className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="font-semibold text-gray-900 dark:text-gray-100">
+                {typeof item.user === 'object' ? item.user?.name : 'Unknown User'}
+              </p>
+              <p className="text-xs text-gray-500">
+                Posted on {new Date(item.date).toLocaleDateString()}
+              </p>
+            </div>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Description</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="whitespace-pre-wrap text-gray-700 dark:text-gray-300">{item.description || "No description provided."}</p>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Actions</CardTitle>
@@ -196,34 +210,36 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
             </CardContent>
           </Card>
 
-          <div>
-            <h1 className="text-3xl font-bold">{item.title}</h1>
-            <div className="flex flex-wrap gap-4 mt-2 text-gray-500">
-              <LocationBadge location={item.location?.address} className="text-sm px-3 py-1.5 max-w-none" />
-              <CategoryBadge category={item.category} className="text-sm px-3 py-1.5" />
-            </div>
-          </div>
-
+          {/* Voting Controls */}
           <Card>
-            <CardHeader>
-              <CardTitle>Description</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="whitespace-pre-wrap text-gray-700 dark:text-gray-300">{item.description || "No description provided."}</p>
+            <CardContent className="p-4 flex justify-between items-center">
+                <span className="font-semibold text-gray-700 dark:text-gray-300">Is this helpful?</span>
+                <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-full px-3 py-1">
+                  <button
+                    onClick={() => handleVote('up')}
+                    className={`p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${isUpvoted ? 'text-orange-600 dark:text-orange-500' : 'text-gray-500 dark:text-gray-400'
+                      }`}
+                  >
+                    <ArrowBigUp className={`w-8 h-8 ${isUpvoted ? 'fill-current' : ''}`} />
+                  </button>
+
+                  <span className={`text-lg font-bold min-w-[3ch] text-center ${score > 0 ? 'text-orange-600 dark:text-orange-500' : score < 0 ? 'text-blue-600 dark:text-blue-500' : 'text-gray-500'
+                    }`}>
+                    {score}
+                  </span>
+
+                  <button
+                    onClick={() => handleVote('down')}
+                    className={`p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${isDownvoted ? 'text-blue-600 dark:text-blue-500' : 'text-gray-500 dark:text-gray-400'
+                      }`}
+                  >
+                    <ArrowBigDown className={`w-8 h-8 ${isDownvoted ? 'fill-current' : ''}`} />
+                  </button>
+                </div>
             </CardContent>
           </Card>
 
-          {/* Matches */}
-          {matches.length > 0 && (
-            <div className="space-y-4">
-              <h3 className="text-xl font-bold">Potential Matches</h3>
-              <div className="space-y-4">
-                {matches.map(match => (
-                  <ItemCard key={match._id} item={match} />
-                ))}
-              </div>
-            </div>
-          )}
+
         </div>
       </div>
 

@@ -102,12 +102,16 @@ export default function ItemCard({ item }: { item: Item }) {
               {new Date(item.date).toLocaleDateString()}
             </p>
           </div>
-          <span className={`ml-auto px-2 py-1 text-xs font-bold uppercase tracking-wider rounded text-white ${item.type === 'lost' ? 'bg-red-500' : 'bg-green-500'}`}>
+            <span className={`ml-auto px-2 py-1 rounded-full text-xs font-medium uppercase ${
+              item.type === 'lost' 
+                ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' 
+                : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+            }`}>
             {item.type}
           </span>
         </div>
 
-        <div className="aspect-video w-full bg-gray-100 relative overflow-hidden">
+        <div className="aspect-square w-full bg-gray-100 relative overflow-hidden">
           {item.images.length > 0 ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -123,7 +127,9 @@ export default function ItemCard({ item }: { item: Item }) {
         </div>
 
         <CardContent className="p-4 space-y-2 flex-1">
-          <h3 className="text-lg font-semibold line-clamp-1">{item.title}</h3>
+          <div className="flex justify-between items-start mb-2">
+            <h3 className="text-lg font-semibold line-clamp-1">{item.title}</h3>
+          </div>
 
           <div className="flex items-center gap-1 mb-2">
             <LocationBadge location={item.location?.address} />

@@ -10,6 +10,7 @@ import { Trash, MessageCircle, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Modal } from '../../components/ui/Modal';
 import { LocationBadge } from '../../components/ui/LocationBadge';
+import { CategoryBadge } from '../../components/ui/CategoryBadge';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -148,11 +149,11 @@ export default function DashboardPage() {
             {myItems.map((item) => (
                 <Card key={item._id} className="overflow-hidden hover:shadow-lg transition-shadow">
                 {item.images && item.images.length > 0 && (
-                    <div className="h-48 overflow-hidden bg-gray-100">
+                    <div className="aspect-square w-full bg-gray-100 relative overflow-hidden">
                     <img 
                         src={item.images[0]} 
                         alt={item.title} 
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition-transform hover:scale-105"
                     />
                     </div>
                 )}
@@ -175,20 +176,23 @@ export default function DashboardPage() {
                     </div>
                     <p className="line-clamp-2 min-h-[40px]">{item.description}</p>
                     
-                    <div className="pt-4 flex gap-2">
-                         <Link href={`/chat?itemId=${item._id}`} className="flex-1">
-                            <Button variant="outline" className="w-full">
-                                <MessageCircle className="w-4 h-4 mr-2" />
-                                Chats
+                    <div className="pt-4 flex items-center justify-between gap-2 mt-auto">
+                        <CategoryBadge category={item.category} />
+                        <div className="flex gap-2">
+                            <Link href={`/chat?itemId=${item._id}`}>
+                                <Button variant="outline" size="sm">
+                                    <MessageCircle className="w-4 h-4 mr-2" />
+                                    Chats
+                                </Button>
+                            </Link>
+                            <Button 
+                                variant="danger" 
+                                size="sm" 
+                                onClick={() => handleDeleteClick(item._id)}
+                            >
+                                <Trash className="w-4 h-4" />
                             </Button>
-                        </Link>
-                        <Button 
-                            variant="danger" 
-                            size="sm" 
-                            onClick={() => handleDeleteClick(item._id)}
-                        >
-                            <Trash className="w-4 h-4" />
-                        </Button>
+                        </div>
                     </div>
                     </div>
                 </CardContent>
@@ -229,8 +233,8 @@ export default function DashboardPage() {
                         <CardContent>
                              <div className="space-y-4">
                                 {claim.item?.images?.[0] && (
-                                     <div className="h-32 w-full bg-gray-100 rounded-md overflow-hidden">
-                                        <img src={claim.item.images[0]} alt="Item" className="w-full h-full object-cover opacity-80" />
+                                     <div className="aspect-square w-full bg-gray-100 rounded-md overflow-hidden">
+                                        <img src={claim.item.images[0]} alt="Item" className="w-full h-full object-cover opacity-80 transition-transform hover:scale-105" />
                                      </div>
                                 )}
                                 
