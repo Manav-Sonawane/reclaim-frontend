@@ -11,9 +11,10 @@ import toast from 'react-hot-toast';
 import { Modal } from '../../components/ui/Modal';
 import { LocationBadge } from '../../components/ui/LocationBadge';
 import { CategoryBadge } from '../../components/ui/CategoryBadge';
+import { ProtectedRoute } from '../../components/ProtectedRoute';
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [myItems, setMyItems] = useState<any[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -122,12 +123,9 @@ export default function DashboardPage() {
     }
   };
 
-  if (!user) {
-      return <div className="p-8 text-center">Please login to view your dashboard.</div>;
-  }
-
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <ProtectedRoute>
+      <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">My Dashboard</h1>
         <Link href="/post">
@@ -337,5 +335,6 @@ export default function DashboardPage() {
         </div>
       </Modal>
     </div>
+    </ProtectedRoute>
   );
 }
