@@ -8,7 +8,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { Button } from '../../../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card';
 
-import { MapPin, Calendar, ArrowLeft, MessageSquare, CheckCircle, User } from 'lucide-react';
+import { MapPin, Calendar, ArrowLeft, MessageSquare, CheckCircle, User, Share2 } from 'lucide-react';
 import { CategoryBadge } from '../../../components/ui/CategoryBadge';
 import { LocationBadge } from '../../../components/ui/LocationBadge';
 import CommentSection from '../../../components/comments/CommentSection';
@@ -157,7 +157,7 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
         <div className="lg:col-span-1 flex flex-col gap-6">
             
             {/* Actions Block */}
-            <div className="bg-white dark:bg-black p-4 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm">
+            <div className="bg-white dark:bg-black p-4 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-4">
                 <ItemActions 
                     item={item} 
                     user={user} 

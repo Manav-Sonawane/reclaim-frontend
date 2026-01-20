@@ -1,10 +1,11 @@
 "use client";
 
 import { Button } from "../ui/Button";
-import { MessageSquare, CheckCircle } from "lucide-react";
+import { MessageSquare, CheckCircle, Share2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ClaimList from "../claims/ClaimList";
+import toast from 'react-hot-toast';
 
 interface ItemActionsProps {
   item: any;
@@ -96,26 +97,60 @@ export default function ItemActions({ item, user, myClaim, onClaimClick }: ItemA
 
   // Action Buttons based on Item Type
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       {item.type === "found" ? (
         <>
-            {/* Found Item: I can Claim it or Message the Finder (maybe just Claim?) */}
-             <Button className="w-full" onClick={() => router.push(`/chat?itemId=${item._id}`)}>
-                <MessageSquare className="mr-2 h-4 w-4" /> Message Finder
-            </Button>
+             <div className="flex gap-3">
+                 <Button className="flex-1" onClick={() => router.push(`/chat?itemId=${item._id}`)}>
+                    <MessageSquare className="mr-2 h-4 w-4" /> Message Finder
+                </Button>
+                <Button variant="secondary" className="flex-1" onClick={() => {
+                     const shareUrl = window.location.href;
+                     if (navigator.share) {
+                         navigator.share({
+                             title: `Reclaim: ${item.title}`,
+                             text: `Check out this found item: ${item.title}`,
+                             url: shareUrl
+                         }).catch(console.error);
+                     } else {
+                         navigator.clipboard.writeText(shareUrl);
+                         toast.success('Link copied to clipboard!');
+                     }
+                 }}>
+                     <Share2 className="mr-2 h-4 w-4" /> Share
+                </Button>
+             </div>
+             
              <Button variant="outline" className="w-full" onClick={onClaimClick}>
                 <CheckCircle className="mr-2 h-4 w-4" /> Claim Item
              </Button>
         </>
       ) : (
         <>
-            {/* Lost Item: I found it? Message Owner or Report Found (Retrieve Item) */}
-            <Button className="w-full" onClick={() => router.push(`/chat?itemId=${item._id}`)}>
-                <MessageSquare className="mr-2 h-4 w-4" /> Message Owner
-            </Button>
-            <Button variant="outline" className="w-full" onClick={onClaimClick}>
+             <div className="flex gap-3">
+                 <Button className="flex-1" onClick={() => router.push(`/chat?itemId=${item._id}`)}>
+                    <MessageSquare className="mr-2 h-4 w-4" /> Message
+                </Button>
+                <Button variant="secondary" className="flex-1" onClick={() => {
+                     const shareUrl = window.location.href;
+                     if (navigator.share) {
+                         navigator.share({
+                             title: `Reclaim: ${item.title}`,
+                             text: `Help return this lost item: ${item.title}`,
+                             url: shareUrl
+                         }).catch(console.error);
+                     } else {
+                         navigator.clipboard.writeText(shareUrl);
+                         toast.success('Link copied to clipboard!');
+                     }
+                 }}>
+                     <Share2 className="mr-2 h-4 w-4" /> Share
+                </Button>
+             </div>
+
+             <Button variant="outline" className="w-full" onClick={onClaimClick}>
                 <CheckCircle className="mr-2 h-4 w-4" /> Retrieve Item
-            </Button>
+             </Button>
         </>
       )}
     </div>

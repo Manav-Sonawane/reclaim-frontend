@@ -31,7 +31,10 @@ function HomeContent() {
     location: '',
     search: searchParam || '',
     type: typeParam || 'all',
-    bounds: null as { south: number, north: number, west: number, east: number } | null
+    bounds: null as { south: number, north: number, west: number, east: number } | null,
+    country: '',
+    state: '',
+    city: ''
   });
 
   // Sync URL params to state on load
@@ -65,6 +68,9 @@ function HomeContent() {
         }
 
         if (filters.search) query += `search=${encodeURIComponent(filters.search)}&`;
+        if (filters.country) query += `country=${encodeURIComponent(filters.country)}&`;
+        if (filters.state) query += `state=${encodeURIComponent(filters.state)}&`;
+        if (filters.city) query += `city=${encodeURIComponent(filters.city)}&`;
 
         const { data } = await api.get(query);
         setItems(data);
@@ -164,7 +170,7 @@ function HomeContent() {
                   <p className="text-gray-500 dark:text-gray-400">No items found matching your criteria.</p>
                   <Button
                     variant="ghost"
-                    onClick={() => setFilters({ category: 'All', location: '', search: '', type: 'all', bounds: null })}
+                    onClick={() => setFilters({ category: 'All', location: '', search: '', type: 'all', bounds: null, country: '', state: '', city: '' })}
                   >
                     Clear Filters
                   </Button>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import { Search } from 'lucide-react';
+import { X } from 'lucide-react';
 
 interface FilterSidebarProps {
   filters: {
@@ -18,6 +18,9 @@ interface FilterSidebarProps {
         west: number;
         east: number;
     } | null;
+    country?: string;
+    state?: string;
+    city?: string;
   };
   onFilterChange: (newFilters: any) => void;
 }
@@ -37,6 +40,9 @@ const TYPES = [
 ];
 
 export default function FilterSidebar({ filters, onFilterChange }: FilterSidebarProps) {
+  /* eslint-disable @typescript-eslint/no-var-requires */
+  const { Country, State, City } = require('country-state-city');
+
   // Parse comma separated strings back to arrays for local state
   const parseList = (str: string) => str && str !== 'all' && str !== 'All' ? str.split(',') : [];
   
@@ -44,12 +50,42 @@ export default function FilterSidebar({ filters, onFilterChange }: FilterSidebar
   const [selectedCategories, setSelectedCategories] = useState<string[]>(parseList(filters.category));
   const [localLocation, setLocalLocation] = useState(filters.location);
 
+  const [countries, setCountries] = useState<any[]>([]);
+  const [states, setStates] = useState<any[]>([]);
+  const [cities, setCities] = useState<any[]>([]);
+
+  const [selectedCountry, setSelectedCountry] = useState(filters.country || '');
+  const [selectedState, setSelectedState] = useState(filters.state || '');
+  const [selectedCity, setSelectedCity] = useState(filters.city || '');
+
+  const [isGeocoding, setIsGeocoding] = useState(false);
+
   // Sync when parent updates
   useEffect(() => {
     setSelectedTypes(parseList(filters.type));
     setSelectedCategories(parseList(filters.category));
     setLocalLocation(filters.location);
+    setSelectedCountry(filters.country || '');
+    setSelectedState(filters.state || '');
+    setSelectedCity(filters.city || '');
   }, [filters]);
+
+  // Init Countries
+  useEffect(() => {
+    setCountries(Country.getAllCountries());
+    if (filters.country) {
+        const c = Country.getAllCountries().find((c: any) => c.name === filters.country);
+        if (c) {
+          setStates(State.getStatesOfCountry(c.isoCode));
+          if (filters.state) {
+            const s = State.getStatesOfCountry(c.isoCode).find((s: any) => s.name === filters.state);
+            if (s) {
+               setCities(City.getCitiesOfState(c.isoCode, s.isoCode));
+            }
+          }
+        }
+    }
+  }, []);
 
   const handleTypeChange = (type: string) => {
     let newTypes;
@@ -73,7 +109,57 @@ export default function FilterSidebar({ filters, onFilterChange }: FilterSidebar
     onFilterChange({ ...filters, category: newCats.length > 0 ? newCats.join(',') : 'All' });
   };
 
-  const [isGeocoding, setIsGeocoding] = useState(false);
+  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const countryCode = e.target.value;
+      const country = countries.find(c => c.isoCode === countryCode);
+      const countryName = country ? country.name : '';
+      
+      setSelectedCountry(countryName);
+      setSelectedState('');
+      setSelectedCity('');
+      setStates(country ? State.getStatesOfCountry(countryCode) : []);
+      setCities([]);
+      
+      onFilterChange({ ...filters, country: countryName, state: '', city: '' });
+  };
+
+  const handleStateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const stateCode = e.target.value;
+      const country = countries.find(c => c.name === selectedCountry);
+      const state = states.find(s => s.isoCode === stateCode);
+      const stateName = state ? state.name : '';
+
+      setSelectedState(stateName);
+      setSelectedCity('');
+      setCities(country && state ? City.getCitiesOfState(country.isoCode, stateCode) : []);
+
+      onFilterChange({ ...filters, state: stateName, city: '' });
+  };
+
+  const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const cityName = e.target.value;
+      setSelectedCity(cityName);
+      onFilterChange({ ...filters, city: cityName });
+  };
+
+  const clearLocationField = (field: 'country' | 'state' | 'city') => {
+      if (field === 'country') {
+          setSelectedCountry('');
+          setSelectedState('');
+          setSelectedCity('');
+          setStates([]);
+          setCities([]);
+          onFilterChange({ ...filters, country: '', state: '', city: '' });
+      } else if (field === 'state') {
+          setSelectedState('');
+          setSelectedCity('');
+          setCities([]);
+          onFilterChange({ ...filters, state: '', city: '' });
+      } else if (field === 'city') {
+          setSelectedCity('');
+          onFilterChange({ ...filters, city: '' });
+      }
+  };
 
   const handleLocationSubmit = async () => {
       if (!localLocation.trim()) {
@@ -121,7 +207,10 @@ export default function FilterSidebar({ filters, onFilterChange }: FilterSidebar
       location: '',
       search: '',
       type: 'all',
-      bounds: null
+      bounds: null,
+      country: '',
+      state: '',
+      city: ''
     });
   };
 
@@ -174,12 +263,76 @@ export default function FilterSidebar({ filters, onFilterChange }: FilterSidebar
         </div>
       </div>
 
-      {/* Location Input */}
+      {/* Structured Location Filters */}
       <div className="space-y-3">
         <h4 className="font-bold text-sm">Location</h4>
+        
+        {/* Country */}
+        <div className="flex gap-2">
+            <select 
+                className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm p-2"
+                value={countries.find(c => c.name === selectedCountry)?.isoCode || ''}
+                onChange={handleCountryChange}
+            >
+                <option value="">Select Country</option>
+                {countries.map((c) => (
+                    <option key={c.isoCode} value={c.isoCode}>{c.name}</option>
+                ))}
+            </select>
+            {selectedCountry && (
+                <Button variant="ghost" size="sm" className="px-2" onClick={() => clearLocationField('country')}>
+                    <X className="w-4 h-4" />
+                </Button>
+            )}
+        </div>
+
+        {/* State */}
+        <div className="flex gap-2">
+            <select 
+                className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm p-2"
+                value={states.find(s => s.name === selectedState)?.isoCode || ''}
+                onChange={handleStateChange}
+                disabled={!selectedCountry}
+            >
+                <option value="">Select State</option>
+                {states.map((s) => (
+                    <option key={s.isoCode} value={s.isoCode}>{s.name}</option>
+                ))}
+            </select>
+            {selectedState && (
+                <Button variant="ghost" size="sm" className="px-2" onClick={() => clearLocationField('state')}>
+                    <X className="w-4 h-4" />
+                </Button>
+            )}
+        </div>
+
+         {/* City */}
+         <div className="flex gap-2">
+            <select 
+                className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm p-2"
+                value={selectedCity}
+                onChange={handleCityChange}
+                disabled={!selectedState}
+            >
+                <option value="">Select City</option>
+                {cities.map((c) => (
+                    <option key={c.name} value={c.name}>{c.name}</option>
+                ))}
+            </select>
+            {selectedCity && (
+                <Button variant="ghost" size="sm" className="px-2" onClick={() => clearLocationField('city')}>
+                    <X className="w-4 h-4" />
+                </Button>
+            )}
+         </div>
+      </div>
+
+      {/* Text Location Input (Fallback) */}
+      <div className="space-y-3 border-t pt-3 dark:border-gray-700">
+        <h4 className="font-bold text-xs text-gray-500 uppercase">Specific Address</h4>
         <div className="flex gap-2">
             <Input 
-                placeholder="e.g. Paris, Library" 
+                placeholder="e.g. Eiffel Tower" 
                 value={localLocation}
                 onChange={(e) => setLocalLocation(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleLocationSubmit()}

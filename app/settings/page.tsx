@@ -84,25 +84,8 @@ export default function SettingsPage() {
                 <p className="text-gray-500 mt-2">Manage your account preferences and profile.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {/* Sidebar Navigation (Visual Only for now) */}
-                <div className="space-y-2">
-                    <Button variant="ghost" className="w-full justify-start bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
-                        <User className="mr-2 h-4 w-4" /> Profile
-                    </Button>
-                    <Button variant="ghost" className="w-full justify-start">
-                        <Bell className="mr-2 h-4 w-4" /> Notifications
-                    </Button>
-                    <Button variant="ghost" className="w-full justify-start">
-                        <Shield className="mr-2 h-4 w-4" /> Security
-                    </Button>
-                    <Button variant="ghost" className="w-full justify-start">
-                        <Moon className="mr-2 h-4 w-4" /> Appearance
-                    </Button>
-                </div>
-
                 {/* Main Content */}
-                <div className="md:col-span-2 space-y-6">
+                <div className="w-full space-y-6">
                     <Card>
                         <CardHeader>
                             <CardTitle>Profile Information</CardTitle>
@@ -217,7 +200,6 @@ export default function SettingsPage() {
                         </CardContent>
                     </Card>
                 </div>
-            </div>
         </div>
     );
 }
