@@ -5,17 +5,24 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import api from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from 'next-themes';
 import { Button } from '../ui/Button';
-import { Search, User, LogOut, Menu, X } from 'lucide-react';
+import { Search, User, LogOut, Menu, X, Sun, Moon, Laptop } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [search, setSearch] = useState('');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +37,7 @@ export default function Navbar() {
       { href: '/dashboard', label: 'Dashboard' },
       { href: '/chat', label: 'Messages', hasBadge: true },
     ] : []),
-    ...(user && user.role === 'admin' ? [
+    ...(user && (user.role === 'admin' || user.role === 'super_admin') ? [
       { href: '/admin', label: 'Admin', className: 'text-red-600 dark:text-red-400' }
     ] : [])
   ];
@@ -59,7 +66,8 @@ export default function Navbar() {
     <nav className="border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-black sticky top-0 z-50">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2 font-bold text-xl text-blue-600 dark:text-blue-400 mr-8">
-          <span>Lost&Found</span>
+          <img src="/logo.png" alt="Reclaim Logo" className="h-8 w-8" />
+          <span>Reclaim</span>
         </Link>
 
         <form onSubmit={handleSearch} className="hidden md:flex items-center flex-1 max-w-sm relative mr-4">
@@ -76,16 +84,26 @@ export default function Navbar() {
         <div className="flex items-center gap-2">
 
           {/* Navigation Links */}
-          <div className="hidden md:flex items-center bg-gray-100 dark:bg-gray-900 rounded-full p-1 mr-4">
+          <div className="hidden md:flex items-center bg-gray-100 dark:bg-gray-900 rounded-full p-1 mr-4 relative">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`relative px-4 py-1.5 rounded-full text-sm font-medium transition-colors z-10 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-gray-800/50'
-                    } ${link.className || ''}`}
+                  className={`relative px-4 py-1.5 rounded-full text-sm font-medium transition-colors z-10 ${
+                    isActive 
+                      ? 'text-blue-600 dark:text-blue-400' 
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  } ${link.className || ''}`}
                 >
+                  {isActive && (
+                    <motion.span
+                      layoutId="nav-pill"
+                      className="absolute inset-0 bg-white dark:bg-gray-800 rounded-full shadow-sm z-[-1]"
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    />
+                  )}
                   {link.label}
                   {/* @ts-ignore */}
                   {link.hasBadge && hasUnread && (
@@ -158,8 +176,20 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile Menu Button */}
-        <div className="flex md:hidden items-center gap-2">
+
+          {/* Theme Toggle */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="mr-2"
+            aria-label="Toggle theme"
+          >
+            {mounted && theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
+
+          {/* Mobile Menu Button */}
+          <div className="flex md:hidden items-center gap-2">
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
