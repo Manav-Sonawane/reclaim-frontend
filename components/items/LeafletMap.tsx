@@ -28,6 +28,7 @@ export default function LeafletMap({ initialLat, initialLng, onLocationSelect, s
   // Initialize map
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+    if ((containerRef.current as any)._leaflet_id) return; // Strict mode safety check
 
     try {
       const map = L.map(containerRef.current, {

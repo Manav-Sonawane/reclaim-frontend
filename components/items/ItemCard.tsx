@@ -21,6 +21,7 @@ interface Item {
   user: {
     _id: string;
     name: string;
+    profilePicture?: string;
   };
   upvotes: string[];
   downvotes: string[];
@@ -91,8 +92,22 @@ export default function ItemCard({ item }: { item: Item }) {
       <Card className="h-full overflow-hidden transition-all hover:shadow-md hover:border-blue-500/50 cursor-pointer group flex flex-col">
         {/* Social Header */}
         <div className="p-3 flex items-center gap-3 border-b border-gray-100 dark:border-gray-800">
-          <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
-            <User className="w-4 h-4" />
+          <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 overflow-hidden font-bold text-xs ring-2 ring-gray-50 dark:ring-gray-900">
+            {item.user?.profilePicture ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={item.user.profilePicture}
+                alt={item.user.name}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              item.user?.name
+                ?.split(" ")
+                .map((n) => n[0])
+                .join("")
+                .substring(0, 2)
+                .toUpperCase() || <User className="w-4 h-4" />
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">

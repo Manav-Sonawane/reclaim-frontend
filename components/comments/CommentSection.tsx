@@ -15,6 +15,7 @@ interface Comment {
     _id: string;
     name: string;
     email: string;
+    profilePicture?: string;
   };
   createdAt: string;
 }
@@ -118,8 +119,22 @@ export default function CommentSection({ itemId }: CommentSectionProps) {
             comments.map((comment) => (
               <div key={comment._id} className="flex gap-4 p-4 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
                 <div className="shrink-0">
-                  <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-                    <User className="w-5 h-5" />
+                  <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 overflow-hidden font-bold text-xs ring-2 ring-gray-50 dark:ring-gray-900">
+                    {comment.user?.profilePicture ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={comment.user.profilePicture}
+                        alt={comment.user.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      comment.user?.name
+                        ?.split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .substring(0, 2)
+                        .toUpperCase() || <User className="w-5 h-5" />
+                    )}
                   </div>
                 </div>
                 <div className="flex-1 space-y-1">

@@ -8,19 +8,23 @@ import { useAuth } from '../../../context/AuthContext';
 import { Button } from '../../../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card';
 
-import { MapPin, Calendar, ArrowLeft, MessageSquare, CheckCircle, User, ArrowBigUp, ArrowBigDown } from 'lucide-react';
+import { MapPin, Calendar, ArrowLeft, MessageSquare, CheckCircle, User } from 'lucide-react';
 import { CategoryBadge } from '../../../components/ui/CategoryBadge';
 import { LocationBadge } from '../../../components/ui/LocationBadge';
 import CommentSection from '../../../components/comments/CommentSection';
 import toast from 'react-hot-toast';
+import ItemActions from '../../../components/items/ItemActions';
 
 export default function ItemDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { user } = useAuth();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [item, setItem] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [myClaim, setMyClaim] = useState<any>(null);
 
   const [loading, setLoading] = useState(true);
+  const [cityName, setCityName] = useState<string | null>(null);
 
   // Unwrap params using React.use()
   const { id } = use(params);
@@ -31,6 +35,11 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
         const { data: itemData } = await api.get(`/items/${id}`);
         setItem(itemData);
 
+        if (user) {
+            const { data: myClaims } = await api.get('/claims/user/me');
+            const foundClaim = myClaims.find((c: any) => c.item?._id === id || c.item === id);
+            setMyClaim(foundClaim);
+        }
 
       } catch (error) {
         console.error('Error fetching item:', error);
@@ -41,65 +50,27 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
     };
 
     fetchItemAndMatches();
-  }, [id]);
+  }, [id, user]);
 
-  // Voting Logic
-  const [upvotes, setUpvotes] = useState<string[]>([]);
-  const [downvotes, setDownvotes] = useState<string[]>([]);
-  const [isVoteLoading, setIsVoteLoading] = useState(false);
 
+  // Location Reverse Geocoding
   useEffect(() => {
     if (item) {
-      setUpvotes(item.upvotes || []);
-      setDownvotes(item.downvotes || []);
+      // Attempt to reverse geocode if coordinates exist
+      if (item.location?.coordinates && item.location.coordinates.length === 2) {
+          const [lng, lat] = item.location.coordinates;
+          // Simple client-side fetch to Nominatim (OpenStreetMap)
+          // Note: In production, this should be proxied or cached
+          fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+            .then(res => res.json())
+            .then(data => {
+                const city = data.address?.city || data.address?.town || data.address?.village || data.address?.municipality;
+                if (city) setCityName(city);
+            })
+            .catch(err => console.error("Failed to reverse geocode:", err));
+      }
     }
   }, [item]);
-
-  const isUpvoted = user && upvotes.includes(user._id);
-  const isDownvoted = user && downvotes.includes(user._id);
-  const score = upvotes.length - downvotes.length;
-
-  const handleVote = async (type: 'up' | 'down') => {
-    if (!user) return toast.error('Please login to vote');
-    if (isVoteLoading) return;
-
-    // Optimistic Update
-    const oldUpvotes = [...upvotes];
-    const oldDownvotes = [...downvotes];
-    const userId = user._id;
-
-    if (type === 'up') {
-      if (isUpvoted) {
-        setUpvotes(prev => prev.filter(id => id !== userId));
-      } else {
-        setUpvotes(prev => [...prev, userId]);
-        if (isDownvoted) setDownvotes(prev => prev.filter(id => id !== userId));
-      }
-    } else {
-      if (isDownvoted) {
-        setDownvotes(prev => prev.filter(id => id !== userId));
-      } else {
-        setDownvotes(prev => [...prev, userId]);
-        if (isUpvoted) setUpvotes(prev => prev.filter(id => id !== userId));
-      }
-    }
-
-    setIsVoteLoading(true);
-    try {
-      const { data } = await api.post(`/items/${id}/vote`, { voteType: type });
-      // Sync with server
-      setUpvotes(data.upvotes);
-      setDownvotes(data.downvotes);
-    } catch (error) {
-      console.error('Vote failed:', error);
-      toast.error('Vote failed');
-      // Revert
-      setUpvotes(oldUpvotes);
-      setDownvotes(oldDownvotes);
-    } finally {
-      setIsVoteLoading(false);
-    }
-  };
 
   const handleClaim = () => {
     router.push(`/items/${id}/claim`);
@@ -114,136 +85,131 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
         <ArrowLeft className="mr-2 h-4 w-4" /> Back
       </Button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Details */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* Instagram-style Header */}
-          <div className="mb-4">
-            <h1 className="text-3xl font-bold">{item.title}</h1>
-            <div className="flex flex-wrap gap-4 mt-2 text-gray-500">
-              <LocationBadge location={item.location?.address} className="text-sm px-3 py-1.5 max-w-none" />
-              <CategoryBadge category={item.category} className="text-sm px-3 py-1.5" />
+      {/* Header Section: Title, User, Badges */}
+      {/* Main Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* LEFT COLUMN (Span 2) - Header Info & Image */}
+        <div className="lg:col-span-2 flex flex-col gap-6">
+            
+            {/* Header Info Block */}
+            <div className="bg-white dark:bg-black p-4 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col gap-4">
+                 
+                 {/* Row 1: Location & Category */}
+                 <div className="flex flex-wrap items-center gap-2">
+                    {/* Title */}
+                    <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mr-2">{item.title}</h1>
+                    
+                    {cityName ? (
+                        <span className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-1 rounded-md text-xs font-medium">
+                             <MapPin className="w-3 h-3" />
+                             {cityName}
+                        </span>
+                    ) : (
+                         <span className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-1 rounded-md text-xs font-medium">{item.location?.address}</span>
+                    )}
+
+                    <CategoryBadge category={item.category} className="text-xs px-2 py-1" />
+                 </div>
+
+                 {/* Row 2: Avatar, User, and Lost/Found (Right Aligned) */}
+                 <div className="flex items-center justify-between">
+                     <div className="flex items-center gap-2">
+                        {/* Avatar */}
+                         <div className="h-8 w-8 rounded-full bg-gray-200 overflow-hidden ring-1 ring-gray-100 dark:ring-gray-800">
+                            {item.user?.profilePicture ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={item.user.profilePicture} alt={item.user.name} className="h-full w-full object-cover" />
+                            ) : (
+                                 <div className="h-full w-full flex items-center justify-center bg-indigo-500 text-white font-bold text-xs">
+                                    {item.user?.name?.[0]?.toUpperCase() || "U"}
+                                 </div>
+                            )}
+                        </div>
+                        {/* Username */}
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                             {typeof item.user === 'object' ? item.user?.name : 'unknown'}
+                        </span>
+                     </div>
+
+                     {/* Lost/Found Badge */}
+                     <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider text-white ${item.type === 'lost' ? 'bg-red-500' : 'bg-green-500'}`}>
+                        {item.type}
+                    </span>
+                 </div>
             </div>
-          </div>
 
-          <div className="aspect-video w-full bg-gray-100 rounded-xl overflow-hidden relative border border-gray-100 dark:border-gray-800">
-            {item.images.length > 0 ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={item.images[0]} alt={item.title} className="h-full w-full object-cover" />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-gray-400">No Image</div>
-            )}
-            <span className={`absolute top-4 right-4 px-3 py-1 text-sm font-bold uppercase tracking-wider rounded text-white ${item.type === 'lost' ? 'bg-red-500' : 'bg-green-500'}`}>
-              {item.type}
-            </span>
-          </div>
-
+            {/* Image Block */}
+            <div className="bg-black/5 dark:bg-white/5 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 flex items-center justify-center min-h-[400px]">
+                 {item.images.length > 0 ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={item.images[0]} alt={item.title} className="w-full h-full object-contain max-h-[600px]" />
+                ) : (
+                    <div className="text-gray-400 italic">No image provided</div>
+                )}
+            </div>
 
         </div>
 
-        {/* Sidebar / Actions */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-3 py-2 mb-4">
-            <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
-              <User className="w-5 h-5" />
+        {/* RIGHT COLUMN (Span 1) - Actions & Description */}
+        <div className="lg:col-span-1 flex flex-col gap-6">
+            
+            {/* Actions Block */}
+            <div className="bg-white dark:bg-black p-4 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                <ItemActions 
+                    item={item} 
+                    user={user} 
+                    myClaim={myClaim} 
+                    onClaimClick={handleClaim} 
+                />
             </div>
-            <div>
-              <p className="font-semibold text-gray-900 dark:text-gray-100">
-                {typeof item.user === 'object' ? item.user?.name : 'Unknown User'}
-              </p>
-              <p className="text-xs text-gray-500">
-                Posted on {new Date(item.date).toLocaleDateString()}
-              </p>
-            </div>
-          </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Description</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="whitespace-pre-wrap text-gray-700 dark:text-gray-300">{item.description || "No description provided."}</p>
-            </CardContent>
-          </Card>
+            {/* Description Block */}
+             <Card className="h-full border border-gray-100 dark:border-gray-800 shadow-sm bg-white dark:bg-black">
+                <CardHeader>
+                    <CardTitle>Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div>
+                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Item Title</h3>
+                        <p className="font-semibold text-lg">{item.title}</p>
+                    </div>
+                    <div>
+                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Description</h3>
+                        <p className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                            {item.description || "No description provided."}
+                        </p>
+                    </div>
+                    {/* Location Description */}
+                    <div>
+                         <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Location Details</h3>
+                         <p className="text-sm text-gray-700 dark:text-gray-300">
+                            {item.location?.address}
+                         </p>
+                    </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {(() => {
-                if (!user) {
-                  return (
-                    <Link href="/auth/login">
-                      <Button className="w-full">Login to Interact</Button>
-                    </Link>
-                  );
-                }
-
-                // Safe ID extraction with optional chaining
-                const itemUserId = typeof item.user === 'object' ? item.user?._id : item.user;
-
-                // DEBUG: Check why this fails
-                console.log('User ID:', user._id);
-                console.log('Item User ID:', itemUserId);
-                console.log('Item User Raw:', item.user);
-                console.log('Is Owner?', itemUserId && user._id && itemUserId.toString() === user._id.toString());
-
-                // Safe string comparison
-                const isOwner = itemUserId && user._id && itemUserId.toString() === user._id.toString();
-
-                if (isOwner) {
-                  return <div className="text-center text-sm text-gray-500">This is your item</div>;
-                }
-
-                return (
-                  <>
-                    <Button className="w-full" onClick={() => router.push(`/chat?itemId=${item._id}`)}>
-                      <MessageSquare className="mr-2 h-4 w-4" /> Message Owner
-                    </Button>
-                    <Button variant="outline" className="w-full" onClick={handleClaim}>
-                      <CheckCircle className="mr-2 h-4 w-4" /> Claim Item
-                    </Button>
-                  </>
-                );
-              })()}
-            </CardContent>
-          </Card>
-
-          {/* Voting Controls */}
-          <Card>
-            <CardContent className="p-4 flex justify-between items-center">
-                <span className="font-semibold text-gray-700 dark:text-gray-300">Is this helpful?</span>
-                <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-full px-3 py-1">
-                  <button
-                    onClick={() => handleVote('up')}
-                    className={`p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${isUpvoted ? 'text-orange-600 dark:text-orange-500' : 'text-gray-500 dark:text-gray-400'
-                      }`}
-                  >
-                    <ArrowBigUp className={`w-8 h-8 ${isUpvoted ? 'fill-current' : ''}`} />
-                  </button>
-
-                  <span className={`text-lg font-bold min-w-[3ch] text-center ${score > 0 ? 'text-orange-600 dark:text-orange-500' : score < 0 ? 'text-blue-600 dark:text-blue-500' : 'text-gray-500'
-                    }`}>
-                    {score}
-                  </span>
-
-                  <button
-                    onClick={() => handleVote('down')}
-                    className={`p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${isDownvoted ? 'text-blue-600 dark:text-blue-500' : 'text-gray-500 dark:text-gray-400'
-                      }`}
-                  >
-                    <ArrowBigDown className={`w-8 h-8 ${isDownvoted ? 'fill-current' : ''}`} />
-                  </button>
-                </div>
-            </CardContent>
-          </Card>
-
+                     {/* Date */}
+                     <div>
+                         <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Reported On</h3>
+                         <p className="text-sm text-gray-700 dark:text-gray-300">
+                            {new Date(item.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                         </p>
+                    </div>
+                </CardContent>
+             </Card>
 
         </div>
+
+        {/* BOTTOM ROW (Span 3) - Comments */}
+        <div className="lg:col-span-3 bg-white dark:bg-black rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm p-6">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                <MessageSquare className="w-5 h-5" />
+                Comments
+            </h2>
+            <CommentSection itemId={id} />
+        </div>
+
       </div>
-
-      <CommentSection itemId={id} />
     </div>
   );
 }
