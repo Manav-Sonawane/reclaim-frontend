@@ -10,8 +10,6 @@ import { Trash, MessageCircle, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Modal } from '../../components/ui/Modal';
 import { LocationBadge } from '../../components/ui/LocationBadge';
-import { CategoryBadge } from '../../components/ui/CategoryBadge';
-import ItemCard from '../../components/items/ItemCard';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -148,28 +146,53 @@ export default function DashboardPage() {
         ) : (
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {myItems.map((item) => (
-                <ItemCard key={item._id} item={item} hideHeader>
-                    <div 
-                        className="flex gap-2 w-full pt-2"
-                            onClick={(e) => {
-                                e.preventDefault(); 
-                                e.stopPropagation();
-                            }}
-                        >
-                             <Link href={`/chat?itemId=${item._id}`} className="flex-1">
-                                <Button variant="outline" className="w-full">
-                                    <MessageCircle className="w-4 h-4 mr-2" />
-                                    Chats
-                                </Button>
-                            </Link>
-                            <Button 
-                                variant="danger" 
-                                onClick={() => handleDeleteClick(item._id)}
-                            >
-                                <Trash className="w-4 h-4" />
-                            </Button>
+                <Card key={item._id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                {item.images && item.images.length > 0 && (
+                    <div className="h-48 overflow-hidden bg-gray-100">
+                    <img 
+                        src={item.images[0]} 
+                        alt={item.title} 
+                        className="w-full h-full object-cover"
+                    />
                     </div>
-                </ItemCard>
+                )}
+                <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                    <CardTitle className="text-lg font-bold truncate">{item.title}</CardTitle>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium uppercase ${
+                        item.type === 'lost' 
+                        ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' 
+                        : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                    }`}>
+                        {item.type}
+                    </span>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                    <div className="flex items-center gap-2">
+                        <LocationBadge location={item.location?.address} />
+                    </div>
+                    <p className="line-clamp-2 min-h-[40px]">{item.description}</p>
+                    
+                    <div className="pt-4 flex gap-2">
+                         <Link href={`/chat?itemId=${item._id}`} className="flex-1">
+                            <Button variant="outline" className="w-full">
+                                <MessageCircle className="w-4 h-4 mr-2" />
+                                Chats
+                            </Button>
+                        </Link>
+                        <Button 
+                            variant="danger" 
+                            size="sm" 
+                            onClick={() => handleDeleteClick(item._id)}
+                        >
+                            <Trash className="w-4 h-4" />
+                        </Button>
+                    </div>
+                    </div>
+                </CardContent>
+                </Card>
             ))}
             </div>
         )}

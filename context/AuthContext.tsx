@@ -17,6 +17,7 @@ interface AuthContextType {
   loading: boolean;
   login: (token: string, userData: User) => void;
   logout: () => void;
+  updateUser: (userData: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,8 +34,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           // If we had a persist endpoint we'd verify here, or just decode if we trust local storage for UI state
           // For now, let's fetch 'me' to be safe
-           const { data } = await api.get('/auth/me');
-           setUser(data);
+          const { data } = await api.get('/auth/me');
+          setUser(data);
         } catch (error) {
           console.error("Auth check failed:", error);
           localStorage.removeItem('token');
@@ -58,8 +59,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     router.push('/auth/login');
   };
 
+  const updateUser = (userData: User) => {
+    setUser(userData);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
