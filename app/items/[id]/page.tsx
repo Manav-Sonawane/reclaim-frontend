@@ -56,6 +56,12 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
   // Location Reverse Geocoding
   useEffect(() => {
     if (item) {
+      // If persisted city exists, use it
+      if (item.location?.city) {
+          setCityName(item.location.city);
+          return;
+      }
+
       // Attempt to reverse geocode if coordinates exist
       if (item.location?.coordinates && item.location.coordinates.length === 2) {
           const [lng, lat] = item.location.coordinates;
@@ -64,7 +70,14 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
           fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
             .then(res => res.json())
             .then(data => {
-                const city = data.address?.city || data.address?.town || data.address?.village || data.address?.municipality;
+                const city = data.address?.city || 
+                             data.address?.town || 
+                             data.address?.village || 
+                             data.address?.municipality ||
+                             data.address?.city_district ||
+                             data.address?.suburb ||
+                             data.address?.neighbourhood ||
+                             data.address?.county;
                 if (city) setCityName(city);
             })
             .catch(err => console.error("Failed to reverse geocode:", err));
@@ -93,50 +106,44 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
         <div className="lg:col-span-2 flex flex-col gap-6">
             
             {/* Header Info Block */}
-            <div className="bg-white dark:bg-black p-4 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col gap-4">
+            <div className="bg-white dark:bg-black p-4 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col gap-3">
                  
-                 {/* Row 1: Location & Category */}
-                 <div className="flex flex-wrap items-center gap-2">
-                    {/* Title */}
-                    <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mr-2">{item.title}</h1>
-                    
-                    {cityName ? (
-                        <span className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-1 rounded-md text-xs font-medium">
-                             <MapPin className="w-3 h-3" />
-                             {cityName}
-                        </span>
-                    ) : (
-                         <span className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-1 rounded-md text-xs font-medium">{item.location?.address}</span>
-                    )}
-
-                    <CategoryBadge category={item.category} className="text-xs px-2 py-1" />
-                 </div>
-
-                 {/* Row 2: Avatar, User, and Lost/Found (Right Aligned) */}
+                 {/* [2] Top Row: Location & Category & Lost/Found */}
                  <div className="flex items-center justify-between">
                      <div className="flex items-center gap-2">
-                        {/* Avatar */}
-                         <div className="h-8 w-8 rounded-full bg-gray-200 overflow-hidden ring-1 ring-gray-100 dark:ring-gray-800">
-                            {item.user?.profilePicture ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src={item.user.profilePicture} alt={item.user.name} className="h-full w-full object-cover" />
-                            ) : (
-                                 <div className="h-full w-full flex items-center justify-center bg-indigo-500 text-white font-bold text-xs">
-                                    {item.user?.name?.[0]?.toUpperCase() || "U"}
-                                 </div>
-                            )}
-                        </div>
-                        {/* Username */}
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                             {typeof item.user === 'object' ? item.user?.name : 'unknown'}
-                        </span>
+                        <LocationBadge location={cityName || (item.location?.coordinates?.length === 2 ? "Locating..." : item.location?.address)} className="text-xs px-2 py-1" />
+
+                        <CategoryBadge category={item.category} className="text-xs px-2 py-1" />
                      </div>
 
-                     {/* Lost/Found Badge */}
+                     {/* Lost/Found Badge (Right Aligned) */}
                      <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider text-white ${item.type === 'lost' ? 'bg-red-500' : 'bg-green-500'}`}>
                         {item.type}
                     </span>
                  </div>
+
+                 {/* [3] Middle Row: User Info (Avatar + Name) */}
+                 <div className="flex items-center gap-2">
+                    {/* Avatar */}
+                     <div className="h-8 w-8 rounded-full bg-gray-200 overflow-hidden ring-1 ring-gray-100 dark:ring-gray-800">
+                        {item.user?.profilePicture ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={item.user.profilePicture} alt={item.user.name} className="h-full w-full object-cover" />
+                        ) : (
+                             <div className="h-full w-full flex items-center justify-center bg-indigo-500 text-white font-bold text-[10px]">
+                                {item.user?.name?.[0]?.toUpperCase() || "U"}
+                             </div>
+                        )}
+                    </div>
+                    {/* Username */}
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                         {typeof item.user === 'object' ? item.user?.name : 'unknown'}
+                    </span>
+                 </div>
+
+                 {/* [1] Bottom Row: Title */}
+                 <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 leading-tight">{item.title}</h1>
+
             </div>
 
             {/* Image Block */}

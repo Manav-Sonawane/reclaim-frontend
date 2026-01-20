@@ -4,7 +4,7 @@ import { User } from "lucide-react";
 import { CategoryBadge } from "../ui/CategoryBadge";
 import { LocationBadge } from "../ui/LocationBadge";
 import { useAuth } from "../../context/AuthContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Item {
   _id: string;
@@ -15,6 +15,7 @@ interface Item {
   images: string[];
   location: {
     address: string;
+    city?: string;
   };
   date: string;
   createdAt: string;
@@ -87,6 +88,39 @@ export default function ItemCard({ item }: { item: Item }) {
   //   }
   // };
 
+  const [cityName, setCityName] = useState<string | null>(null);
+
+  // Reverse Geocoding for City Name
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const itemLocation = item.location as any;
+  const coordinates = itemLocation?.coordinates;
+
+  useEffect(() => {
+    // If we already have the persisted city name, use it!
+    if (item.location?.city) {
+        setCityName(item.location.city);
+        return;
+    }
+
+    if (coordinates && coordinates.length === 2 && !cityName) {
+         const [lng, lat] = coordinates;
+         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+            .then(res => res.json())
+            .then(data => {
+                const city = data.address?.city || 
+                             data.address?.town || 
+                             data.address?.village || 
+                             data.address?.municipality ||
+                             data.address?.city_district ||
+                             data.address?.suburb ||
+                             data.address?.neighbourhood ||
+                             data.address?.county;
+                if (city) setCityName(city);
+            })
+            .catch(err => console.error("Failed to reverse geocode in card:", err));
+    }
+  }, [coordinates, cityName, item.location?.city]);
+
   return (
     <Link href={`/items/${item._id}`}>
       <Card className="h-full overflow-hidden transition-all hover:shadow-md hover:border-blue-500/50 cursor-pointer group flex flex-col">
@@ -149,7 +183,7 @@ export default function ItemCard({ item }: { item: Item }) {
           </div>
 
           <div className="flex items-center gap-1 mb-2">
-            <LocationBadge location={item.location?.address} />
+            <LocationBadge location={cityName || (coordinates && coordinates.length === 2 ? "Locating..." : item.location?.address)} />
           </div>
         </CardContent>
 

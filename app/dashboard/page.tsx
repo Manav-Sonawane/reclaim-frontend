@@ -14,6 +14,7 @@ import { CategoryBadge } from '../../components/ui/CategoryBadge';
 import { ProtectedRoute } from '../../components/ProtectedRoute';
 import DashboardItemCard from '../../components/dashboard/DashboardItemCard';
 import ClaimCard from '../../components/dashboard/ClaimCard';
+import ManageClaimsModal from '../../components/dashboard/ManageClaimsModal';
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
@@ -33,6 +34,11 @@ export default function DashboardPage() {
   const [deleteClaimModal, setDeleteClaimModal] = useState<{ isOpen: boolean; claimId: string | null }>({
     isOpen: false,
     claimId: null
+  });
+  const [manageClaimsModal, setManageClaimsModal] = useState<{ isOpen: boolean; itemId: string | null; itemTitle: string }>({
+    isOpen: false,
+    itemId: null,
+    itemTitle: ''
   });
 
   const [loading, setLoading] = useState(true);
@@ -125,6 +131,14 @@ export default function DashboardPage() {
     }
   };
 
+  const handleManageClaimsClick = (item: any) => {
+    setManageClaimsModal({
+        isOpen: true,
+        itemId: item._id,
+        itemTitle: item.title
+    });
+  };
+
   return (
     <ProtectedRoute>
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -150,7 +164,8 @@ export default function DashboardPage() {
                 <DashboardItemCard 
                     key={item._id} 
                     item={item} 
-                    onDelete={handleDeleteClick} 
+                    onDelete={handleDeleteClick}
+                    onManageClaims={handleManageClaimsClick} 
                 />
             ))}
             </div>
@@ -238,6 +253,13 @@ export default function DashboardPage() {
             </div>
         </div>
       </Modal>
+
+      <ManageClaimsModal 
+        isOpen={manageClaimsModal.isOpen}
+        onClose={() => setManageClaimsModal({ isOpen: false, itemId: null, itemTitle: '' })}
+        itemId={manageClaimsModal.itemId}
+        itemTitle={manageClaimsModal.itemTitle}
+      />
     </div>
     </ProtectedRoute>
   );

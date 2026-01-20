@@ -42,7 +42,7 @@ export default function ItemActions({ item, user, myClaim, onClaimClick }: ItemA
         )}
         
         {/* If Lost item, maybe show potential matches or just edit/delete (handled in dashboard) */}
-        {item.type === "lost" && (
+        {(
              <Button variant="outline" className="w-full" onClick={() => router.push('/dashboard')}>
                  Manage in Dashboard
              </Button>
@@ -96,16 +96,16 @@ export default function ItemActions({ item, user, myClaim, onClaimClick }: ItemA
 
   // Action Buttons based on Item Type
   return (
-    <div className="space-y-3">
+    <div className="space-y-8">
       {item.type === "found" ? (
         <>
             {/* Found Item: I can Claim it or Message the Finder (maybe just Claim?) */}
-             <Button variant="outline" className="w-full" onClick={onClaimClick}>
-                <CheckCircle className="mr-2 h-4 w-4" /> Claim Item
-             </Button>
              <Button className="w-full" onClick={() => router.push(`/chat?itemId=${item._id}`)}>
                 <MessageSquare className="mr-2 h-4 w-4" /> Message Finder
             </Button>
+             <Button variant="outline" className="w-full" onClick={onClaimClick}>
+                <CheckCircle className="mr-2 h-4 w-4" /> Claim Item
+             </Button>
         </>
       ) : (
         <>
