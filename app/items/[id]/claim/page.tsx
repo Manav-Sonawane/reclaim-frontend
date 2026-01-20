@@ -62,7 +62,7 @@ export default function ClaimItemPage({ params }: { params: Promise<{ id: string
         const { data: uploadData } = await api.post("/upload", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
-        proofUrl = uploadData.path; // Assuming backend returns { path: "url" }
+        proofUrl = uploadData.url;
         setUploading(false);
       }
 
@@ -73,7 +73,7 @@ export default function ClaimItemPage({ params }: { params: Promise<{ id: string
         proof: proofUrl,
       });
 
-      toast.success("Claim submitted successfully!");
+      toast.success("Claim submitted! The owner has been notified and will review your request.");
       router.push(`/items/${id}`);
     } catch (error: any) {
       console.error("Claim submission failed:", error);

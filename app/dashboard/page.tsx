@@ -35,10 +35,11 @@ export default function DashboardPage() {
     isOpen: false,
     claimId: null
   });
-  const [manageClaimsModal, setManageClaimsModal] = useState<{ isOpen: boolean; itemId: string | null; itemTitle: string }>({
+  const [manageClaimsModal, setManageClaimsModal] = useState<{ isOpen: boolean; itemId: string | null; itemTitle: string; itemType: 'lost' | 'found' }>({
     isOpen: false,
     itemId: null,
-    itemTitle: ''
+    itemTitle: '',
+    itemType: 'found' // default
   });
 
   const [loading, setLoading] = useState(true);
@@ -135,7 +136,8 @@ export default function DashboardPage() {
     setManageClaimsModal({
         isOpen: true,
         itemId: item._id,
-        itemTitle: item.title
+        itemTitle: item.title,
+        itemType: item.type
     });
   };
 
@@ -157,7 +159,11 @@ export default function DashboardPage() {
         {loading ? (
              <div>Loading...</div>
         ) : myItems.length === 0 ? (
-            <p className="text-gray-500">You haven&apos;t reported any items yet.</p>
+            <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-700">
+                <div className="text-6xl mb-4">📦</div>
+                <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">No items yet</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Start by reporting your first lost or found item</p>
+            </div>
         ) : (
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {myItems.map((item) => (
@@ -178,7 +184,11 @@ export default function DashboardPage() {
          {loading ? (
              <div>Loading...</div>
         ) : myClaims.length === 0 ? (
-            <p className="text-gray-500">You haven&apos;t claimed any items yet.</p>
+            <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-700">
+                <div className="text-6xl mb-4">✋</div>
+                <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">No claims yet</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Haven&apos;t claimed any items</p>
+            </div>
         ) : (
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {myClaims.map((claim) => (
@@ -256,9 +266,10 @@ export default function DashboardPage() {
 
       <ManageClaimsModal 
         isOpen={manageClaimsModal.isOpen}
-        onClose={() => setManageClaimsModal({ isOpen: false, itemId: null, itemTitle: '' })}
+        onClose={() => setManageClaimsModal({ isOpen: false, itemId: null, itemTitle: '', itemType: 'found' })}
         itemId={manageClaimsModal.itemId}
         itemTitle={manageClaimsModal.itemTitle}
+        itemType={manageClaimsModal.itemType}
       />
     </div>
     </ProtectedRoute>

@@ -11,7 +11,7 @@ import { useState, useEffect } from "react";
 
 interface DashboardItemCardProps {
     item: any;
-    onDelete: (id: string) => void;
+    onDelete?: (id: string) => void;
     onManageClaims?: (item: any) => void;
 }
 
@@ -82,31 +82,39 @@ export default function DashboardItemCard({ item, onDelete, onManageClaims }: Da
                         </div>
                         <p className="line-clamp-2 min-h-[40px]">{item.description}</p>
 
-                        <div className="pt-4 flex items-center justify-end gap-2 mt-auto">
-                            {item.type === 'found' && onManageClaims && (
+                        <div className="pt-4 flex items-center mt-auto">
+                            {onManageClaims && (
                                 <Button
                                     size="sm"
-                                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white relative"
                                     onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
                                         onManageClaims(item);
                                     }}
                                 >
-                                    Review Claims
+                                    {item.type === 'found' ? 'Review Claims' : 'Review Retrievals'}
+                                    {item.claimCount > 0 && (
+                                        <span className="ml-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
+                                            {item.claimCount}
+                                        </span>
+                                    )}
                                 </Button>
                             )}
-                            <Button
-                                variant="danger"
-                                size="sm"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    onDelete(item._id);
-                                }}
-                            >
-                                <Trash className="w-4 h-4" />
-                            </Button>
+                            {onDelete && (
+                                <Button
+                                    variant="danger"
+                                    size="sm"
+                                    className="ml-auto"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        onDelete(item._id);
+                                    }}
+                                >
+                                    <Trash className="w-4 h-4" />
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </CardContent>

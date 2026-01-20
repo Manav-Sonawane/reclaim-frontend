@@ -6,15 +6,17 @@ import api from "../../lib/api";
 import { Button } from "../ui/Button";
 import toast from "react-hot-toast";
 import { Loader2, CheckCircle, XCircle, ExternalLink } from "lucide-react";
+import UserDropdown from "../user/UserDropdown";
 
 interface ManageClaimsModalProps {
     isOpen: boolean;
     onClose: () => void;
     itemId: string | null;
     itemTitle: string;
+    itemType?: 'lost' | 'found';
 }
 
-export default function ManageClaimsModal({ isOpen, onClose, itemId, itemTitle }: ManageClaimsModalProps) {
+export default function ManageClaimsModal({ isOpen, onClose, itemId, itemTitle, itemType = 'found' }: ManageClaimsModalProps) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [claims, setClaims] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -46,7 +48,7 @@ export default function ManageClaimsModal({ isOpen, onClose, itemId, itemTitle }
         setProcessingId(claimId);
         try {
             await api.put(`/claims/${claimId}`, { status });
-            toast.success(status === 'approved' ? "Claim Verified & Approved!" : "Claim Rejected");
+            toast.success(status === 'approved' ? "Request Approved!" : "Request Rejected");
             
             // Refresh list to show updated status
             fetchClaims();
@@ -57,14 +59,14 @@ export default function ManageClaimsModal({ isOpen, onClose, itemId, itemTitle }
             }
         } catch (error) {
             console.error(error);
-            toast.error(`Failed to ${status} claim`);
+            toast.error(`Failed to ${status} request`);
         } finally {
             setProcessingId(null);
         }
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={`Claims for: ${itemTitle}`}>
+        <Modal isOpen={isOpen} onClose={onClose} title={`${itemType === 'found' ? 'Claims' : 'Retrievals'} for: ${itemTitle}`}>
             <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
                 {loading ? (
                     <div className="flex justify-center py-8">
@@ -72,7 +74,7 @@ export default function ManageClaimsModal({ isOpen, onClose, itemId, itemTitle }
                     </div>
                 ) : claims.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">
-                        No claims received for this item yet.
+                        {itemType === 'found' ? 'No claims received for this item yet.' : 'No retrieval requests received yet.'}
                     </div>
                 ) : (
                     <div className="space-y-4">
@@ -89,21 +91,12 @@ export default function ManageClaimsModal({ isOpen, onClose, itemId, itemTitle }
                             >
                                 {/* Claimant Info */}
                                 <div className="flex items-center gap-3 mb-3">
-                                    <div className="h-10 w-10 rounded-full bg-gray-200 overflow-hidden">
-                                        {claim.claimant?.profilePicture ? (
-                                            // eslint-disable-next-line @next/next/no-img-element
-                                            <img src={claim.claimant.profilePicture} alt={claim.claimant.name} className="h-full w-full object-cover" />
-                                        ) : (
-                                            <div className="h-full w-full flex items-center justify-center bg-indigo-500 text-white font-bold">
-                                                {claim.claimant?.name?.[0]?.toUpperCase() || "U"}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div>
-                                        <p className="font-semibold text-sm">{claim.claimant?.name || "Unknown User"}</p>
-                                        <p className="text-xs text-gray-500">{new Date(claim.createdAt).toLocaleDateString()} at {new Date(claim.createdAt).toLocaleTimeString()}</p>
-                                    </div>
+                                    <UserDropdown user={claim.claimant} />
+                                    
                                     <div className="ml-auto">
+                                        <div className="text-xs text-gray-500 text-right mb-1">
+                                            {new Date(claim.createdAt).toLocaleDateString()} at {new Date(claim.createdAt).toLocaleTimeString()}
+                                        </div>
                                         <span className={`text-xs px-2 py-1 rounded-full font-medium uppercase ${
                                             claim.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                                             claim.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -115,7 +108,9 @@ export default function ManageClaimsModal({ isOpen, onClose, itemId, itemTitle }
 
                                 {/* Answers / Description */}
                                 <div className="mb-3">
-                                    <p className="text-xs font-bold text-gray-500 uppercase mb-1">Claimant's Description</p>
+                                    <p className="text-xs font-bold text-gray-500 uppercase mb-1">
+                                        {itemType === 'found' ? "Claimant's Description" : "Finder's Description"}
+                                    </p>
                                     <p className="text-sm bg-gray-50 dark:bg-gray-800 p-2 rounded whitespace-pre-wrap">
                                         {claim.message || "No description provided."}
                                     </p>
@@ -125,7 +120,7 @@ export default function ManageClaimsModal({ isOpen, onClose, itemId, itemTitle }
                                 {claim.proof && (
                                     <div className="mb-4">
                                          <p className="text-xs font-bold text-gray-500 uppercase mb-1">Proof Image</p>
-                                         <a href={claim.proof} target="_blank" rel="noopener noreferrer" className="block relative h-32 w-full rounded-md overflow-hidden hover:opacity-90 transition-opacity border dark:border-gray-700">
+                                         <a href={claim.proof} target="_blank" rel="noopener noreferrer" className="block relative aspect-square w-full rounded-md overflow-hidden hover:opacity-90 transition-opacity border dark:border-gray-700">
                                             {/* eslint-disable-next-line @next/next/no-img-element */}
                                             <img src={claim.proof} alt="Proof" className="h-full w-full object-cover" />
                                             <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity text-white text-xs font-bold">
@@ -152,7 +147,7 @@ export default function ManageClaimsModal({ isOpen, onClose, itemId, itemTitle }
                                             onClick={() => handleAction(claim._id, 'approved')}
                                             disabled={!!processingId}
                                         >
-                                            <CheckCircle className="w-4 h-4 mr-1" /> Verify & Approve
+                                            <CheckCircle className="w-4 h-4 mr-1" /> {itemType === 'found' ? 'Verify & Approve' : 'Accept Retrieval'}
                                         </Button>
                                     </div>
                                 )}

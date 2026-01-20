@@ -126,7 +126,7 @@ export default function FilterSidebar({ filters, onFilterChange }: FilterSidebar
   };
 
   return (
-    <div className="space-y-8">
+    <div className="sticky top-20 space-y-8 max-h-[calc(100vh-6rem)] overflow-y-auto pb-4">
       <div className="flex justify-between items-center mb-4">
         <h3 className="font-bold text-lg">Filters</h3>
         <button onClick={clearFilters} className="text-sm text-blue-600 hover:underline">

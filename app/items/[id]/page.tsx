@@ -14,6 +14,7 @@ import { LocationBadge } from '../../../components/ui/LocationBadge';
 import CommentSection from '../../../components/comments/CommentSection';
 import toast from 'react-hot-toast';
 import ItemActions from '../../../components/items/ItemActions';
+import UserDropdown from '../../../components/user/UserDropdown';
 
 export default function ItemDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -117,28 +118,22 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
                      </div>
 
                      {/* Lost/Found Badge (Right Aligned) */}
-                     <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider text-white ${item.type === 'lost' ? 'bg-red-500' : 'bg-green-500'}`}>
+                     <span className={`px-2 py-1 rounded-full text-xs font-medium uppercase tracking-wider ${
+                        item.type === 'lost' 
+                        ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' 
+                        : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                     }`}>
                         {item.type}
                     </span>
                  </div>
 
                  {/* [3] Middle Row: User Info (Avatar + Name) */}
                  <div className="flex items-center gap-2">
-                    {/* Avatar */}
-                     <div className="h-8 w-8 rounded-full bg-gray-200 overflow-hidden ring-1 ring-gray-100 dark:ring-gray-800">
-                        {item.user?.profilePicture ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={item.user.profilePicture} alt={item.user.name} className="h-full w-full object-cover" />
-                        ) : (
-                             <div className="h-full w-full flex items-center justify-center bg-indigo-500 text-white font-bold text-[10px]">
-                                {item.user?.name?.[0]?.toUpperCase() || "U"}
-                             </div>
-                        )}
-                    </div>
-                    {/* Username */}
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                         {typeof item.user === 'object' ? item.user?.name : 'unknown'}
-                    </span>
+                    {item.user && typeof item.user === 'object' ? (
+                        <UserDropdown user={item.user} />
+                    ) : (
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Unknown User</span>
+                    )}
                  </div>
 
                  {/* [1] Bottom Row: Title */}
