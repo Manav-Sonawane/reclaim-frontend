@@ -1,9 +1,10 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import api from '../lib/api';
 import ItemCard from '../components/items/ItemCard';
+import SearchAutocomplete from '../components/items/SearchAutocomplete';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Loader2, Filter, Search } from 'lucide-react';
@@ -15,6 +16,7 @@ import { useAuth } from '../context/AuthContext';
 
 function HomeContent() {
   const { user } = useAuth();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const searchParam = searchParams.get('search');
   const typeParam = searchParams.get('type');
@@ -97,19 +99,18 @@ function HomeContent() {
         </div>
       )}
 
-      {/* Mobile Search Bar */}
+      {/* Mobile Search Bar with Autocomplete */}
       <div className="md:hidden mb-6 relative">
-        <Input
+        <SearchAutocomplete
           placeholder="Search for items..."
-          className="pl-10 h-10 w-full"
-          value={filters.search}
-          onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+          maxResults={6}
+          onItemSelect={(item) => {
+            router.push(`/items/${item._id}`);
+          }}
         />
-        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
       </div>
 
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold">Browse Listings</h2>
         {/* Mobile Filter Button */}
         <Button
           className="md:hidden"
@@ -163,7 +164,7 @@ function HomeContent() {
                   <p className="text-gray-500 dark:text-gray-400">No items found matching your criteria.</p>
                   <Button
                     variant="ghost"
-                    onClick={() => setFilters({ category: 'All', location: '', search: '', type: 'all' })}
+                    onClick={() => setFilters({ category: 'All', location: '', search: '', type: 'all', bounds: null })}
                   >
                     Clear Filters
                   </Button>
