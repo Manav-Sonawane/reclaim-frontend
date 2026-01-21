@@ -25,6 +25,7 @@ export const metadata: Metadata = {
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '../context/AuthContext';
 import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { ThemeProvider } from '../components/providers/ThemeProvider';
 import SmartSearchChat from '../components/ai/SmartSearchChat';
@@ -51,6 +52,7 @@ export default function RootLayout({
               <main className="min-h-[calc(100vh-4rem)]">
                 {children}
               </main>
+              <Footer />
               <SmartSearchChat user={null} />
               <Toaster position="top-center" />
             </AuthProvider>

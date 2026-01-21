@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { Card, CardContent, CardFooter } from "../ui/Card";
 import { User } from "lucide-react";
 import { CategoryBadge } from "../ui/CategoryBadge";
@@ -123,6 +124,13 @@ export default function ItemCard({ item }: { item: Item }) {
 
   return (
     <Link href={`/items/${item._id}`}>
+      <motion.div
+         initial={{ opacity: 0, scale: 0.95 }}
+         animate={{ opacity: 1, scale: 1 }}
+         whileHover={{ y: -5 }}
+         transition={{ duration: 0.2 }}
+         className="h-full"
+      >
       <Card className="h-full overflow-hidden transition-all hover:shadow-md hover:border-blue-500/50 cursor-pointer group flex flex-col">
         {/* Social Header */}
         <div className="p-3 flex items-center gap-3 border-b border-gray-100 dark:border-gray-800">
@@ -232,6 +240,7 @@ export default function ItemCard({ item }: { item: Item }) {
           </div> */}
         </CardFooter>
       </Card>
+      </motion.div>
     </Link>
   );
 }
