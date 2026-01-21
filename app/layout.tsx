@@ -28,7 +28,7 @@ import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { ThemeProvider } from '../components/providers/ThemeProvider';
-import SmartSearchChat from '../components/ai/SmartSearchChat';
+
 
 export default function RootLayout({
   children,
@@ -53,7 +53,6 @@ export default function RootLayout({
                 {children}
               </main>
               <Footer />
-              <SmartSearchChat user={null} />
               <Toaster position="top-center" />
             </AuthProvider>
           </ThemeProvider>

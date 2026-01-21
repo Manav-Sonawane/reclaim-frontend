@@ -20,6 +20,11 @@ function HomeContent() {
   const searchParams = useSearchParams();
   const searchParam = searchParams.get('search');
   const typeParam = searchParams.get('type');
+  const categoryParam = searchParams.get('category');
+  const locationParam = searchParams.get('location');
+  const cityParam = searchParams.get('city');
+  const countryParam = searchParams.get('country');
+  const stateParam = searchParams.get('state');
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [items, setItems] = useState<any[]>([]);
@@ -27,26 +32,29 @@ function HomeContent() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const [filters, setFilters] = useState({
-    category: 'All',
-    location: '',
+    category: categoryParam || 'All',
+    location: locationParam || '',
     search: searchParam || '',
     type: typeParam || 'all',
     bounds: null as { south: number, north: number, west: number, east: number } | null,
-    country: '',
-    state: '',
-    city: ''
+    country: countryParam || '',
+    state: stateParam || '',
+    city: cityParam || ''
   });
 
   // Sync URL params to state on load
   useEffect(() => {
-    if (typeParam || searchParam) {
-      setFilters(prev => ({
-        ...prev,
-        type: (typeParam as 'lost' | 'found') || prev.type,
-        search: searchParam || prev.search
-      }));
-    }
-  }, [typeParam, searchParam]);
+    setFilters(prev => ({
+      ...prev,
+      type: (typeParam as 'lost' | 'found' | 'all') || prev.type,
+      search: searchParam || prev.search,
+      category: categoryParam || prev.category,
+      location: locationParam || prev.location,
+      city: cityParam || prev.city,
+      country: countryParam || prev.country,
+      state: stateParam || prev.state,
+    }));
+  }, [typeParam, searchParam, categoryParam, locationParam, cityParam, countryParam, stateParam]);
 
   useEffect(() => {
     const fetchItems = async () => {

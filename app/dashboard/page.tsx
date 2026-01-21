@@ -201,7 +201,7 @@ export default function DashboardPage() {
             <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-700">
                 <div className="text-6xl mb-4">🔍</div>
                 <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">No retrievals yet</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">You haven't reported finding any lost items yet</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Haven't retrieved any items</p>
             </div>
         ) : (
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

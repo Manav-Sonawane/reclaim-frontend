@@ -51,8 +51,12 @@ export default function Navbar() {
         try {
           const { data } = await api.get('/chats/unread');
           setHasUnread(data.hasUnread);
-        } catch (err) {
-          console.error(err);
+        } catch (err: any) {
+          if (err.response?.status === 401) {
+            logout();
+          } else {
+            console.error(err);
+          }
         }
       };
 

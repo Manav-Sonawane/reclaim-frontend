@@ -147,7 +147,14 @@ export default function SmartSearchChat({ user }: { user: any }) {
                         </Link>
                       ))}
                       <Link
-                        href="/"
+                        href={`/?${new URLSearchParams({
+                            ...(msg.data.filters?.search && { search: msg.data.filters.search }),
+                            ...(msg.data.filters?.type && { type: msg.data.filters.type }),
+                            ...(msg.data.filters?.category && { category: msg.data.filters.category }),
+                            ...(msg.data.filters?.location && { location: msg.data.filters.location }),
+                            ...(msg.data.filters?.city && { city: msg.data.filters.city }),
+                            ...(msg.data.filters?.country && { country: msg.data.filters.country }),
+                        }).toString()}`}
                         className="block text-center text-xs text-blue-600 hover:underline mt-1"
                       >
                         View all results
