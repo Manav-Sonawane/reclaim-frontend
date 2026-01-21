@@ -7,7 +7,8 @@ import api from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from 'next-themes';
 import { Button } from '../ui/Button';
-import { Search, User, LogOut, Menu, X, Sun, Moon, Laptop } from 'lucide-react';
+import { Search, User, LogOut, Menu, X, Laptop } from 'lucide-react';
+import { WipeToggler } from '../ui/WipeToggler';
 import { motion } from 'framer-motion';
 
 export default function Navbar() {
@@ -175,16 +176,11 @@ export default function Navbar() {
             </div>
           )}
 
+
           {/* Theme Toggle */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="mr-2"
-            aria-label="Toggle theme"
-          >
-            {mounted && theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
+          <div className="mr-2 flex items-center">
+            {mounted && <WipeToggler />}
+          </div>
         </div>
 
           {/* Mobile Menu Button */}

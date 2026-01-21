@@ -54,15 +54,15 @@ export default function Footer() {
             <ul className="space-y-3 text-sm">
               <li className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
                 <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                <span>support@reclaim.com</span>
+                <span>support.reclaim@gmail.com</span>
               </li>
-              <li className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
+              {/* <li className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
                 <Phone className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                <span>+1 (555) 123-4567</span>
-              </li>
+                <span>+91 1234567890</span>
+              </li> */}
               <li className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
                 <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                <span>123 Market St, San Francisco, CA</span>
+                <span>Mumbai, Maharashtra</span>
               </li>
             </ul>
           </div>
