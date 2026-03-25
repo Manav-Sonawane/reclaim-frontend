@@ -152,8 +152,3 @@ src/           Legacy/generated app files still present in repo
 - Google OAuth should use the same client ID configured in the backend.
 - The active product app is primarily built from `app/`, `components/`, `context/`, and `lib/`.
 - Leaflet styles are loaded globally through the root layout.
-
-## Related Docs
-
-- Backend README: [`../reclaim-backend/README.md`](../reclaim-backend/README.md)
-- Repo overview: [`../README.md`](../README.md)
